@@ -1,4 +1,4 @@
-package com.alexstrasza.auctioning;
+package com.alexstrasza.auctioning.models;
 
 public class ItemBase
 {

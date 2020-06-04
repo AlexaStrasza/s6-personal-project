@@ -1,6 +1,4 @@
-package com.alexstrasza.auctioning;
-
-import org.apache.tomcat.util.digester.ArrayStack;
+package com.alexstrasza.auctioning.models;
 
 import java.sql.Time;
 import java.util.ArrayList;

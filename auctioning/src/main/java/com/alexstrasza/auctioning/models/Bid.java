@@ -1,4 +1,4 @@
-package com.alexstrasza.auctioning;
+package com.alexstrasza.auctioning.models;
 
 import java.sql.Time;
 

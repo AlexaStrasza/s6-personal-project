@@ -1,4 +1,4 @@
-package com.alexstrasza.auctioning;
+package com.alexstrasza.auctioning.models;
 import org.apache.tomcat.util.digester.ArrayStack;
 
 import java.util.List;
