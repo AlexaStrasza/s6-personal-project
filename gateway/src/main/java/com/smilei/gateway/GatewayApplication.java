@@ -13,20 +13,18 @@ public class GatewayApplication {
 		SpringApplication.run(GatewayApplication.class, args);
 	}
 
-	private static String VOICE_URI = "http://spring-web-api:8081";
-	private static String WEBSOCKET_URI = "ws://spring-web-api:8081";
+	private static String AUCTIONING = "http://localhost:8081";
+	private static String WEBSOCKET_URI = "ws://localhost:8082";
 
 	@Bean
 	public RouteLocator myRoutes(RouteLocatorBuilder builder)
 	{
 		return builder.routes()
 			.route(p -> p
-			    .path("/api/**")
-//				.filters(f -> f.addRequestHeader("test", "Hello World"))
-				.uri(VOICE_URI))
+			    .path("/**")
+				.uri(AUCTIONING))
 			.route(p -> p
 				.path("/websocket/**")
-//				.filters(f -> f.addRequestHeader("test", "Hello World"))
 				.uri(WEBSOCKET_URI))
 		    .build();
 	}
