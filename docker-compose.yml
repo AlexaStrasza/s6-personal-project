@@ -1,0 +1,37 @@
+﻿version: '3.3'
+services:
+  message-broker:
+    image: rabbitmq:3.8-management
+    hostname: message-broker
+    restart: always
+    labels:
+        NAME: message-broker
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+ 
+  # spring-gateway: 
+    # image: spring-gateway:latest 
+    # hostname: spring-gateway
+    # restart: always
+    # ports:
+      # - 8080:8080 
+ 
+  # vokaturi-backend: 
+    # image: vokaturi-backend:latest 
+    # hostname: vokaturi-backend
+    # restart: always
+ 
+  # spring-web-api: 
+    # image: spring-web-api:latest 
+    # hostname: spring-web-api
+    # restart: always
+    # ports:
+      # - 8082:8082 
+ 
+#  face-reader-backend: 
+#    image: face-reader-backend:latest 
+#    hostname: face-reader-backend
+#    restart: always
+#    ports:
+#      - 8082:8082 
