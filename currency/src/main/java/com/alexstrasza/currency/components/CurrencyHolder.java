@@ -1,11 +1,10 @@
 package com.alexstrasza.currency.components;
 
-import com.alexstrasza.currency.models.PlayerCurrency;
+import com.alexstrasza.currency.dao.CurrencyDao;
+import com.alexstrasza.currency.entity.CurrencyEntity;
+import com.alexstrasza.currency.entity.InvestmentEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 public class CurrencyHolder
@@ -13,159 +12,127 @@ public class CurrencyHolder
     @Autowired
     RabbitMessager messager;
 
-    List<PlayerCurrency> players = new ArrayList<PlayerCurrency>();
-
-    public void CreateNewPlayer(String user, int amount)
-    {
-        players.add(new PlayerCurrency(user, amount));
-    }
+    @Autowired
+    private CurrencyDao currencyDao;
 
     public void ChangeCurrency(String user, int amount)
     {
-        for (PlayerCurrency player: players)
+        CurrencyEntity entity = currencyDao.getCurrencyObjByUser(user);
+        System.out.println(entity);
+        if (entity != null)
         {
-            if (player.userId.equals(user))
-            {
-                player.ChangeCurrency(amount);
-                if (amount > 0)
-                messager.SendCurrencyUpdate(amount, player.userId, "add", "false");
-                else
-                messager.SendCurrencyUpdate(amount, player.userId, "remove", "false");
-            }
+            entity.ownedCurrency += amount;
+            currencyDao.save(entity);
+            if (amount > 0)
+            messager.SendCurrencyUpdate(amount, user, "add", "false");
+            else
+            messager.SendCurrencyUpdate(amount, user, "remove", "false");
         }
     }
 
     public String Withdraw(String user, String auctionId)
     {
-        for (PlayerCurrency player: players)
-        {
-            if (player.userId.equals(user))
-            {
-                if (player.investedAuctions.containsKey(auctionId))
-                {
-                    int regainedCurrency = player.investedAuctions.get(auctionId);
-                    player.ownedCurrency += regainedCurrency;
-                    player.investedAuctions.remove(auctionId);
+        CurrencyEntity entity = currencyDao.getCurrencyObjByUser(user);
+        if (entity == null) return "User not found.";
+        InvestmentEntity investment = entity.getInvestedAuction(auctionId);
+        if (investment == null) return "Error withdrawing offer. User has not bid on given auction.";
 
-                    messager.SendCurrencyUpdate(regainedCurrency, player.userId, "add", "false");
-                    messager.SendCurrencyUpdate(regainedCurrency, player.userId, "remove", "true");
+        int regainedCurrency = investment.invested;
+        entity.ownedCurrency += regainedCurrency;
+        entity.floatingCurrency -= regainedCurrency;
+        entity.investedAuctions.remove(investment);
 
-                    return "Offer withdrawn";
-                }
-                return "Error withdrawing offer. User has not bid on given auction.";
-            }
-        }
-        return "User not found.";
+        currencyDao.save(entity);
+
+        messager.SendCurrencyUpdate(regainedCurrency, user, "add", "false");
+        messager.SendCurrencyUpdate(regainedCurrency, user, "remove", "true");
+
+        return "Offer withdrawn";
     }
 
     public String PayAuction(String user, String auctionId, String payTo)
     {
-        for (PlayerCurrency player: players)
-        {
-            if (player.userId.equals(user))
-            {
-                if (player.investedAuctions.containsKey(auctionId))
-                {
-                    int spentCurrency = player.investedAuctions.get(auctionId);
-                    player.investedAuctions.remove(auctionId);
-                    messager.SendCurrencyUpdate(spentCurrency, player.userId, "remove", "true");
-                    for (PlayerCurrency playerToPayTo : players)
-                    {
-                        if (playerToPayTo.userId.equals(payTo))
-                        {
-                            playerToPayTo.ChangeCurrency(spentCurrency);
-                            messager.SendCurrencyUpdate(spentCurrency, playerToPayTo.userId, "add", "false");
-                        }
-                    }
-                    return "Auction paid";
-                }
-                return "Error paying auction. User has not bid on given auction.";
-            }
-        }
-        return "User not found.";
+        CurrencyEntity entity = currencyDao.getCurrencyObjByUser(user);
+        CurrencyEntity entityPayTo = currencyDao.getCurrencyObjByUser(payTo);
+        if (entity == null || entityPayTo == null) return "User not found.";
+        InvestmentEntity investment = entity.getInvestedAuction(auctionId);
+        if (investment == null) return "Error paying auction. User has not bid on given auction.";
+
+        int currencyChange = investment.invested;
+        entity.floatingCurrency -= currencyChange;
+        entityPayTo.ownedCurrency += currencyChange;
+        entity.investedAuctions.remove(investment);
+
+        currencyDao.save(entity);
+        currencyDao.save(entityPayTo);
+
+        messager.SendCurrencyUpdate(currencyChange, user, "remove", "true");
+        messager.SendCurrencyUpdate(currencyChange, payTo, "add", "false");
+        return "Auction paid";
     }
-
-
 
     public int Bid(String user, String auctionId, int amount)
     {
-        for (PlayerCurrency player: players)
+
+        CurrencyEntity entity = currencyDao.getCurrencyObjByUser(user);
+        if (entity == null) return -1; // User not found
+        // When raising an existing bid
+        InvestmentEntity investment = entity.getInvestedAuction(auctionId);
+        if (investment == null) // If null user has not bid on auction before
         {
-            if (player.userId.equals(user))
+            if (entity.ownedCurrency >= amount)
             {
-                // When raising an existing bid
-                if (player.investedAuctions.containsKey(auctionId))
-                {
-                    if (amount > player.investedAuctions.get(auctionId))
-                    {
-                        if (player.ownedCurrency >= (amount - player.investedAuctions.get(auctionId)))
-                        {
-                            int spending = amount - player.investedAuctions.get(auctionId);
-                            player.ownedCurrency -= (amount - player.investedAuctions.get(auctionId));
-                            player.investedAuctions.replace(auctionId, amount);
+                investment = new InvestmentEntity(auctionId, amount);
+                entity.investedAuctions.add(investment);
+                entity.ownedCurrency -= amount;
+                entity.floatingCurrency += amount;
+                currencyDao.save(entity);
 
-                            messager.SendCurrencyUpdate(spending, player.userId, "remove", "false");
-                            messager.SendCurrencyUpdate(spending, player.userId, "add", "true");
+                messager.SendCurrencyUpdate(amount, user, "remove", "false");
+                messager.SendCurrencyUpdate(amount, user, "add", "true");
 
-                            return 1; // Successfully placed bid
-                        }
-                        else return 0; // Not enough currency
-                    }
-                    else return 2; // Already higher bid placed
-                }
-                // When placing a new bid
-                else
-                {
-                    if (player.ownedCurrency >= amount)
-                    {
-                        player.ownedCurrency -= amount;
-                        player.investedAuctions.put(auctionId, amount);
-                        messager.SendCurrencyUpdate(amount, player.userId, "remove", "false");
-                        messager.SendCurrencyUpdate(amount, player.userId, "add", "true");
-
-                        return 1; // Successfully placed bid
-                    }
-                    else return 0; // Not enough currency
-                }
+                return 1; // Successfully placed bid
             }
+            else return 0; // Not enough currency
         }
-        return -1;
+        else
+        {
+            if (investment.invested > amount) return 2; // Already bidding more
+            int spending = amount - investment.invested;
+            if (entity.ownedCurrency >= spending)
+            {
+                investment.invested = amount;
+
+                entity.ownedCurrency -= spending;
+                entity.floatingCurrency += spending;
+
+                currencyDao.save(entity);
+
+                messager.SendCurrencyUpdate(spending, user, "remove", "false");
+                messager.SendCurrencyUpdate(spending, user, "add", "true");
+                return 1; // Successfully placed bid
+            }
+            else return 0; // Not enough currency
+        }
     }
 
     public int GetCurrency(String user)
     {
-        for (PlayerCurrency player: players)
-        {
-            if (player.userId.equals(user))
-            {
-                return player.ownedCurrency;
-            }
-        }
-        return -1;
+        CurrencyEntity entity = currencyDao.getCurrencyObjByUser(user);
+        return entity.ownedCurrency;
     }
 
     public int GetFloatingCurrency(String user)
     {
-        for (PlayerCurrency player: players)
-        {
-            if (player.userId.equals(user))
-            {
-                int i = 0;
-                for (int value : player.investedAuctions.values())
-                {
-                    i += value;
-                }
-                return i;
-            }
-        }
-        return -1;
+        CurrencyEntity entity = currencyDao.getCurrencyObjByUser(user);
+        return entity.floatingCurrency;
     }
 
     public void CreatePlayerForTesting()
     {
         System.out.println("Creating some player data");
-        CreateNewPlayer("User 1", 10000);
-        CreateNewPlayer("User 2", 9000);
-        CreateNewPlayer("User 3", 8000);
+//        CreateNewPlayer("User 1", 10000);
+//        CreateNewPlayer("User 2", 9000);
+//        CreateNewPlayer("User 3", 8000);
     }
 }

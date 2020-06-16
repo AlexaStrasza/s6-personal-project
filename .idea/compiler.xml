@@ -6,15 +6,17 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="currency" />
-        <module name="inventory" />
         <module name="gateway" />
-        <module name="web-api" />
+        <module name="inventory" />
+        <module name="authorization-server" />
+        <module name="currency" />
         <module name="auctioning" />
+        <module name="web-api" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="auctioning" target="1.8" />
+      <module name="authorization-server" target="1.8" />
       <module name="currency" target="11" />
       <module name="gateway" target="11" />
       <module name="inventory" target="11" />
@@ -24,6 +26,7 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="auctioning" options="-parameters" />
+      <module name="authorization-server" options="-parameters" />
       <module name="currency" options="-parameters" />
       <module name="gateway" options="-parameters" />
       <module name="inventory" options="-parameters" />

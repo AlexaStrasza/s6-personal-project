@@ -20,6 +20,12 @@ public class MessagingConfig
     @Value("${alexstrasza.routing.currency.auctionProcessing}")
     private String auctionProcessingRouting;
 
+    @Value("${alexstrasza.queue.currency.userCreate}")
+    private String userCreationQueue;
+
+    @Value("${alexstrasza.routing.currency.userCreate}")
+    private String userCreationRouting;
+
     @Bean
     public DirectExchange directExchange()
     {
@@ -33,8 +39,20 @@ public class MessagingConfig
     }
 
     @Bean
+    public Queue userCreationQueue()
+    {
+        return new Queue(userCreationQueue);
+    }
+
+    @Bean
     public Binding auctionProcessingBinding(Queue auctionProcessingQueue, DirectExchange directExchange)
     {
         return BindingBuilder.bind(auctionProcessingQueue).to(directExchange).with(auctionProcessingRouting);
+    }
+
+    @Bean
+    public Binding userCreationBinding(Queue userCreationQueue, DirectExchange directExchange)
+    {
+        return BindingBuilder.bind(userCreationQueue).to(directExchange).with(userCreationRouting);
     }
 }

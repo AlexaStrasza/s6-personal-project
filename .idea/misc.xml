@@ -11,6 +11,7 @@
         <option value="$PROJECT_DIR$/gateway/pom.xml" />
         <option value="$PROJECT_DIR$/auctioning/pom.xml" />
         <option value="$PROJECT_DIR$/currency/pom.xml" />
+        <option value="$PROJECT_DIR$/authorization-server/pom.xml" />
       </list>
     </option>
   </component>
