@@ -11,5 +11,5 @@ public interface InventoryDao extends JpaRepository<InventoryEntity, Long>
 //    public final static String getInventoryByUser = "SELECT * FROM inventory WHERE user = :username";
 ////
 //    @Query(value = getInventoryByUser, nativeQuery = true)
-    InventoryEntity findByUser(UsersEntity username);
+    InventoryEntity findByUser(UsersEntity user);
 }

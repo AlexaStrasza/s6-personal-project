@@ -11,57 +11,17 @@ public class InventoryEntity
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public int id;
 
-    public int getId()
-    {
-        return id;
-    }
-
-    public void setId(int id)
-    {
-        this.id = id;
-    }
-
-    public List<ItemBase> getInventory()
-    {
-        return inventory;
-    }
-
-    public void setInventory(List<ItemBase> inventory)
-    {
-        this.inventory = inventory;
-    }
-
-    public Set<Integer> getUsedSlots()
-    {
-        return usedSlots;
-    }
-
-    public void setUsedSlots(Set<Integer> usedSlots)
-    {
-        this.usedSlots = usedSlots;
-    }
-
-    public UsersEntity getUser()
-    {
-        return user;
-    }
-
-    public void setUser(UsersEntity user)
-    {
-        this.user = user;
-    }
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user")
+    public UsersEntity user;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     public List<ItemBase> inventory = new ArrayList<>();
 
     @ElementCollection
-    @CollectionTable(name="usedslots", joinColumns=@JoinColumn(name="OWNER_ID")
-    )
+    @CollectionTable(name="usedslots", joinColumns=@JoinColumn(name="OWNER_ID"))
     public Set<Integer> usedSlots = new HashSet<>();
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "user")
-    public UsersEntity user;
 
     public InventoryEntity()
     {
@@ -112,4 +72,6 @@ public class InventoryEntity
 
         return i;
     }
+
+
 }

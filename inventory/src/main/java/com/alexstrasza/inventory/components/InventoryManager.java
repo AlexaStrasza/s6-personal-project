@@ -4,9 +4,11 @@ import com.alexstrasza.inventory.dao.InventoryDao;
 import com.alexstrasza.inventory.dao.UsersDao;
 import com.alexstrasza.inventory.entity.ItemBase;
 import com.alexstrasza.inventory.entity.InventoryEntity;
+import com.alexstrasza.inventory.entity.UsersEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.swing.*;
 import javax.transaction.Transactional;
 
 @Service
@@ -24,37 +26,45 @@ public class InventoryManager
 
     public InventoryEntity GetInventory(String user)
     {
-        return inventoryDao.findByUser(userDao.findByUsername(user));
+        UsersEntity usersEntity = userDao.findByUsername(user);
+        System.out.println("Retrieved user object: " + usersEntity);
+        InventoryEntity inventoryEntity = inventoryDao.findByUser(usersEntity);
+        System.out.println(inventoryEntity);
+        return inventoryEntity;
     }
 
     public void AddItemToPlayer(String user, ItemBase item)
     {
         InventoryEntity inventoryEntity = GetInventory(user);
 
-        System.out.println("Adding <" + item.stackSize + "x " + item.itemBaseId + "> to user <" + user + ">");
-
-        var addedToAStack = false;
-
-        for (ItemBase itemBase : inventoryEntity.getInventory())
+        if (inventoryEntity != null)
         {
-            if(itemBase.itemBaseId == item.itemBaseId)
+            System.out.println("Adding <" + item.stackSize + "x " + item.itemBaseId + "> to user <" + user + ">");
+
+            var addedToAStack = false;
+
+            for (ItemBase itemBase : inventoryEntity.inventory)
             {
-                itemBase.stackSize += item.stackSize;
-                addedToAStack = true;
-                break;
+                if(itemBase.itemBaseId == item.itemBaseId)
+                {
+                    itemBase.stackSize += item.stackSize;
+                    addedToAStack = true;
+                    break;
+                }
             }
+
+            if (!addedToAStack)
+            {
+                int openSlot = inventoryEntity.GetNextOpenSlot();
+                item.usedSlot = openSlot;
+                inventoryEntity.usedSlots.add(openSlot);
+                inventoryEntity.inventory.add(item);
+            }
+
+            inventoryDao.save(inventoryEntity);
+
+            messager.SendInventoryUpdate(item, user, "add");
         }
-
-        if (addedToAStack) return;
-
-        int openSlot = inventoryEntity.GetNextOpenSlot();
-        item.usedSlot = openSlot;
-        inventoryEntity.usedSlots.add(openSlot);
-        inventoryEntity.inventory.add(item);
-
-        inventoryDao.save(inventoryEntity);
-
-        messager.SendInventoryUpdate(item, user, "add");
     }
 
     public boolean RemoveItemFromPlayer(String user, ItemBase item)
@@ -62,21 +72,23 @@ public class InventoryManager
         InventoryEntity inventoryEntity = GetInventory(user);
 
         System.out.println("Removing <" + item.stackSize + "x " + item.itemBaseId + "> from user <" + user + ">");
-
-        for (ItemBase itemBase : inventoryEntity.inventory)
+        if (inventoryEntity != null)
         {
-            if(itemBase.itemBaseId == item.itemBaseId)
+            for (ItemBase itemBase : inventoryEntity.inventory)
             {
-                if (itemBase.stackSize < item.stackSize) return false;
-
-                itemBase.stackSize -= item.stackSize;
-                if (itemBase.stackSize == 0)
+                if (itemBase.itemBaseId == item.itemBaseId)
                 {
-                    inventoryEntity.inventory.remove(itemBase);
+                    if (itemBase.stackSize < item.stackSize) return false;
+
+                    itemBase.stackSize -= item.stackSize;
+                    if (itemBase.stackSize == 0)
+                    {
+                        inventoryEntity.inventory.remove(itemBase);
+                    }
+                    inventoryDao.save(inventoryEntity);
+                    messager.SendInventoryUpdate(item, user, "remove");
+                    return true;
                 }
-                inventoryDao.save(inventoryEntity);
-                messager.SendInventoryUpdate(item, user, "remove");
-                return true;
             }
         }
         return false;
