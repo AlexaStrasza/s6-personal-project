@@ -1,10 +1,6 @@
 package com.alexstrasza.currency.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-
 import javax.persistence.*;
-import java.util.Set;
 
 @Entity
 @Table(name= "users")
@@ -19,7 +15,7 @@ public class UsersEntity
     }
 
     @Id
-    @Column(columnDefinition = "VARCHAR(20)")
+    @Column(columnDefinition = "VARCHAR(24)")
     private String username;
 
     public String getUsername() {

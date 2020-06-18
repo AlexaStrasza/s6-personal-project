@@ -14,6 +14,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
@@ -32,22 +33,22 @@ public class UserController {
     RabbitMessager messager;
 
     private UsersDao applicationUserRepository;
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private PasswordEncoder bCryptPasswordEncoder;
 
-    public UserController(UsersDao applicationUserRepository,
-                          BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public UserController(UsersDao applicationUserRepository, PasswordEncoder bCryptPasswordEncoder) {
         this.applicationUserRepository = applicationUserRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @PostMapping("/sign-up")
-    public void signUp(@RequestBody UsersEntity user) {
+    public String signUp(@RequestBody UsersEntity user) {
+        if(applicationUserRepository.findByUsername(user.getUsername()) != null) return "User already exists with that username.";
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         user.setAccountNonExpired(true);
         user.setCredentialsNonExpired(true);
         user.setEnabled(true);
         HashSet<AuthoritiesEntity> set = new HashSet<>();
-        set.add(new AuthoritiesEntity(user,Authority.ROLE_ADMIN));
+        set.add(new AuthoritiesEntity(user,Authority.ROLE_USER));
         user.setAuthorities(set);
         user = applicationUserRepository.save(user);
         if(user != null){
@@ -55,11 +56,13 @@ public class UserController {
 //            kafkaKafkaTemplate.send("Kwetter",new UserModel(user.getUsername(),"email"));
         }
 
-
+        return "User created";
     }
 
     @PostMapping("/login")
-    public TokenResponse login(@RequestBody UsersEntity usersEntity){
+    public TokenResponse login(@RequestBody UsersEntity usersEntity)
+    {
+        if(applicationUserRepository.findByUsername(usersEntity.getUsername()) == null) return null;
         RestTemplate template = new RestTemplate();
         HttpHeaders header = createHeaders("clientId","client-secret");
         MultiValueMap<String,String> map = new LinkedMultiValueMap<String,String>();
@@ -67,7 +70,8 @@ public class UserController {
         map.add("password",usersEntity.getPassword());
         map.add("grant_type","password");
         HttpEntity<MultiValueMap<String,String>> request = new HttpEntity<MultiValueMap<String, String>>(map,header);
-        ResponseEntity<TokenResponse> response = template.postForEntity("http://localhost:8081/oauth/token",request,TokenResponse.class);
+        ResponseEntity<TokenResponse> response = template.postForEntity("http://localhost:8082/oauth/token", request, TokenResponse.class);
+
         return response.getBody();
     }
 
@@ -79,8 +83,14 @@ public class UserController {
         map.add("refresh_token",refreshToken);
         map.add("grant_type","refresh_token");
         HttpEntity<MultiValueMap<String,String>> request = new HttpEntity<MultiValueMap<String, String>>(map,header);
-        ResponseEntity<TokenResponse> response = template.postForEntity("http://localhost:8081/oauth/token",request,TokenResponse.class);
+        ResponseEntity<TokenResponse> response = template.postForEntity("http://localhost:8082/oauth/token",request,TokenResponse.class);
         return response.getBody();
+    }
+
+    @GetMapping("/getExtraUserInfo")
+    public String getExtraUserInfo(Principal principal)
+    {
+        return principal.getName();
     }
 
     HttpHeaders createHeaders(String username, String password){

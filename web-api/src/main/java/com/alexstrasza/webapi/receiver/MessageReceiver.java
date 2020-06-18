@@ -48,6 +48,7 @@ public class MessageReceiver {
     {
         Map<String, Object> headers = new HashMap<>();
         headers.put("MessageType", "bidPlacement");
+        headers.put("buyout", message.getMessageProperties().getHeader("buyout").toString());
         SendMessage(message.getMessageProperties().getHeader("auctionId").toString(),
                     new String(message.getBody(), StandardCharsets.UTF_8), headers);
     }

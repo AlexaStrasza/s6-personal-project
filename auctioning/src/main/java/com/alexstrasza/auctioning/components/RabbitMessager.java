@@ -1,6 +1,7 @@
 package com.alexstrasza.auctioning.components;
 
 import com.alexstrasza.auctioning.models.Bid;
+import com.alexstrasza.auctioning.models.DataContainer;
 import com.alexstrasza.auctioning.models.ItemBase;
 import com.alexstrasza.auctioning.models.WinLossObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,6 +12,8 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import javax.xml.crypto.Data;
 
 @Component
 public class RabbitMessager
@@ -26,6 +29,12 @@ public class RabbitMessager
 
     @Value("${alexstrasza.routing.webapi.bids}")
     private String webapiRouting;
+
+    @Value("${alexstrasza.routing.currency.bids}")
+    private String currencyBidsRouting;
+
+//    @Value("${alexstrasza.routing.currency.buyout}")
+//    private String currencyBuyoutRouting;
 
     @Autowired
     RabbitTemplate rabbitTemplate;
@@ -68,7 +77,7 @@ public class RabbitMessager
         rabbitTemplate.convertAndSend(directExchange, auctionInventoryProcessing, message);
     }
 
-    public void NotifyBids(Bid bid, String auctionId)
+    public void NotifyBids(Bid bid, String auctionId, String buyout)
     {
         ObjectMapper objectMapper = new ObjectMapper();
         String json = "";
@@ -84,7 +93,50 @@ public class RabbitMessager
 
         MessageProperties properties = new MessageProperties();
         properties.setHeader("auctionId", auctionId);
+        properties.setHeader("buyout", buyout);
         Message message = new Message(json.getBytes(), properties);
         rabbitTemplate.convertAndSend(directExchange, webapiRouting, message);
+    }
+
+//    public void SendBuyout(DataContainer amount, String auctionId, String user)
+//    {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        String json = "";
+//
+//        try
+//        {
+//            json = objectMapper.writeValueAsString(amount);
+//        }
+//        catch (JsonProcessingException e)
+//        {
+//            e.printStackTrace();
+//        }
+//
+//        MessageProperties properties = new MessageProperties();
+//        properties.setHeader("auctionId", auctionId);
+//        properties.setHeader("user", user);
+//        Message message = new Message(json.getBytes(), properties);
+//        rabbitTemplate.convertAndSend(directExchange, currencyBuyoutRouting, message);
+//    }
+
+    public void SendBid(DataContainer amount, String auctionId, String user)
+    {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = "";
+
+        try
+        {
+            json = objectMapper.writeValueAsString(amount);
+        }
+        catch (JsonProcessingException e)
+        {
+            e.printStackTrace();
+        }
+
+        MessageProperties properties = new MessageProperties();
+        properties.setHeader("auctionId", auctionId);
+        properties.setHeader("user", user);
+        Message message = new Message(json.getBytes(), properties);
+        rabbitTemplate.convertAndSend(directExchange, currencyBidsRouting, message);
     }
 }

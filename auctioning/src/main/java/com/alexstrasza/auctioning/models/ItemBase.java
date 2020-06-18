@@ -1,7 +1,15 @@
 package com.alexstrasza.auctioning.models;
 
+import javax.persistence.*;
+
+@Entity
+//@Table(name = "items")
 public class ItemBase
 {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    public int id;
+
     // Base id without any data would be enough, clients should have an up to date item database to retrieve data from
     public int itemBaseId;
     public int stackSize;
@@ -9,12 +17,16 @@ public class ItemBase
 
     public ItemBase() { }
 
-    public ItemBase(int id, int amount)
+    public ItemBase(int itemBaseId, int stackSize)
     {
-        itemBaseId = id;
-        stackSize = amount;
+        this.itemBaseId = itemBaseId;
+        this.stackSize = stackSize;
     }
-    // Possibly should be removed
-//    public String itemStatData;
 
+    public ItemBase(int itemBaseId, int stackSize, int slot)
+    {
+        this.itemBaseId = itemBaseId;
+        this.stackSize = stackSize;
+        this.usedSlot = slot;
+    }
 }

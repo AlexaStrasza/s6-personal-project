@@ -19,6 +19,12 @@ public class RabbitMessager
     @Value("${alexstrasza.routing.webapi.currencyChange}")
     private String webapiRouting;
 
+    @Value("${alexstrasza.routing.auction.bids}")
+    private String returnBidsRouting;
+
+//    @Value("${alexstrasza.routing.auction.buyout}")
+//    private String returnBuyoutRouting;
+
     @Autowired
     RabbitTemplate rabbitTemplate;
 
@@ -41,5 +47,47 @@ public class RabbitMessager
         properties.setHeader("floating", floating);
         Message message = new Message(json.getBytes(), properties);
         rabbitTemplate.convertAndSend(directExchange, webapiRouting, message);
+    }
+
+//    public void ReplyBuyout(DataContainer amount, String auctionId, String user)
+//    {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        String json = "";
+//
+//        try
+//        {
+//            json = objectMapper.writeValueAsString(amount);
+//        }
+//        catch (JsonProcessingException e)
+//        {
+//            e.printStackTrace();
+//        }
+//
+//        MessageProperties properties = new MessageProperties();
+//        properties.setHeader("auctionId", auctionId);
+//        properties.setHeader("user", user);
+//        Message message = new Message(json.getBytes(), properties);
+//        rabbitTemplate.convertAndSend(directExchange, returnBuyoutRouting, message);
+//    }
+
+    public void ReplyBid(DataContainer amount, String auctionId, String user)
+    {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = "";
+
+        try
+        {
+            json = objectMapper.writeValueAsString(amount);
+        }
+        catch (JsonProcessingException e)
+        {
+            e.printStackTrace();
+        }
+
+        MessageProperties properties = new MessageProperties();
+        properties.setHeader("auctionId", auctionId);
+        properties.setHeader("user", user);
+        Message message = new Message(json.getBytes(), properties);
+        rabbitTemplate.convertAndSend(directExchange, returnBidsRouting, message);
     }
 }

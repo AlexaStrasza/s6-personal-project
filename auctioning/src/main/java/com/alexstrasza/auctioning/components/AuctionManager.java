@@ -1,32 +1,44 @@
 package com.alexstrasza.auctioning.components;
+import com.alexstrasza.auctioning.dao.AuctionDao;
+import com.alexstrasza.auctioning.dao.UsersDao;
 import com.alexstrasza.auctioning.models.*;
 import org.apache.tomcat.util.digester.ArrayStack;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
+import javax.transaction.Transactional;
 import java.util.*;
 
-@Component
-public class Auctioning
+@Service
+@Transactional
+public class AuctionManager
 {
     @Autowired
     RabbitMessager rabbitMessager;
 
-    public List<Auction> indexedAuctions = new ArrayStack<>();
+    @Autowired
+    private AuctionDao auctionDao;
 
-    private Auctioning() { }
+    @Autowired
+    private UsersDao userDao;
 
-    @Scheduled(fixedRate = 5000)
-    private void CheckEndedAuctions()
+    public AuctionManager() { }
+
+    @Scheduled(cron = "0 */1 * * * *")
+    @SchedulerLock(name = "TaskScheduler_scheduledTask", lockAtLeastFor = "30s", lockAtMostFor = "1m")
+    public void CheckEndedAuctions()
     {
         TimeZone timeZone = TimeZone.getTimeZone("UTC");
         Calendar calendar = Calendar.getInstance(timeZone);
-//        auction.auctionStartTime = ;
+
+        List<Auction> indexedAuctions = auctionDao.findAllByAuctionEndedIsFalse();
+        List<Auction> auctionsToRemove = new ArrayList<>();
 
         System.out.println("Checking for auctions to conclude");
         System.out.println("Active Auctions: " + indexedAuctions.size());
-        int i = 0;
         for (Auction auction : indexedAuctions)
         {
             if (!auction.auctionEnded)
@@ -34,51 +46,39 @@ public class Auctioning
                 if (calendar.getTimeInMillis() > auction.auctionEndTime)
                 {
                     auction.auctionEnded = true;
-                    i++;
+
+                    if (auction.creator.equals(auction.GetWinner()))
+                    {
+                        rabbitMessager.NotifyBids(new Bid(-20, ""), auction.auctionId, "false");
+                    }
+                    else
+                    {
+                        rabbitMessager.NotifyBids(new Bid(-10, auction.GetWinner()), auction.auctionId, "false");
+                    }
+                    // Do stuff when auction is over
+                    // Notify currency service with involved users
+                    rabbitMessager.SendCurrencyUpdate(auction.ConstructWinLossObject(), auction.creator);
+                    // Notify item system for item transfer
+                    rabbitMessager.SendInventoryUpdate(auction.item, auction.GetWinner());
+                    auctionsToRemove.add(auction);
                 }
-            }
-        }
-        System.out.println(i + " auctions concluded");
-    }
-
-    @Scheduled(fixedRate = 5000)
-    private void ResolveConcludedAuctions()
-    {
-        List<Auction> auctionsToRemove = new ArrayList<>();
-
-        int i = 0;
-        for (Auction auction : indexedAuctions)
-        {
-            if (auction.auctionEnded)
-            {
-                // Do stuff when auction is over
-                // Notify currency service with involved users
-                rabbitMessager.SendCurrencyUpdate(auction.ConstructWinLossObject(), auction.creator);
-                // Notify item system for item transfer
-                rabbitMessager.SendInventoryUpdate(auction.item, auction.GetWinner());
-                auctionsToRemove.add(auction);
             }
         }
 
         indexedAuctions.removeAll(auctionsToRemove);
+
+        System.out.println(auctionsToRemove.size() + " auctions concluded");
     }
 
     public Auction GetAuction(String auctionId)
     {
-        for (Auction auction : indexedAuctions)
-        {
-            if (auction.id.equals(auctionId))
-            {
-                return auction;
-            }
-        }
-        return null;
+        return auctionDao.findByAuctionId(auctionId);
     }
 
     public AuctionCollection GetAuctions(String name, String type, String rarity, boolean buyout)
     {
         // Should really be done in database with a query to filter results.
-        List<Auction> auctions = new ArrayList<>(indexedAuctions);
+        List<Auction> auctions = auctionDao.findAll();
 
         List<Auction> toRemove = new ArrayList<>();
         for (Auction auction : auctions)
@@ -152,7 +152,7 @@ public class Auctioning
     public AuctionCollection GetAllAuctions()
     {
         AuctionCollection holder = new AuctionCollection();
-        holder.auctions = indexedAuctions;
+        holder.auctions = auctionDao.findAll();
         return holder;
     }
 
@@ -166,9 +166,7 @@ public class Auctioning
         auction.buyoutPrice = auctionData.buyoutPrice;
         auction.filterOptions = auctionData.filterOptions;
         auction.creator = creator;
-        auction.id = auction.creator + "-" + auction.item.itemBaseId + "-" + auction.item.stackSize + "-" + UUID.randomUUID();
-
-        indexedAuctions.add(auction);
+        auction.auctionId = auction.creator + "-" + auction.item.itemBaseId + "-" + auction.item.stackSize + "-" + UUID.randomUUID();
 
         // Setup start and end times
         Bid bid = new Bid();
@@ -183,8 +181,21 @@ public class Auctioning
 
         auction.auctionEndTime = calendar.getTimeInMillis();
 
-        System.out.println(indexedAuctions.size());
+        auctionDao.save(auction);
     }
+
+//    public Bid PlaceBuyout(String auctionId, String user)
+//    {
+//        Auction auction = GetAuction(auctionId);
+//        if (auction == null) return null;
+//
+//        Bid bid = new Bid(auction.buyoutPrice, user);
+//        auction.bidHistory.add(bid);
+//        auctionDao.save(auction);
+//
+//        auction.auctionEnded = true;
+//        return bid;
+//    }
 
     public Bid PlaceBid(int bidAmount, String auctionId, String user)
     {
@@ -195,7 +206,10 @@ public class Auctioning
 
         if (bidAmount >= auction.GetPriceTotal())
         {
-            return auction.PlaceBid(bidAmount, user);
+            Bid bid = new Bid(bidAmount, user);
+            auction.bidHistory.add(bid);
+            auctionDao.save(auction);
+            return bid;
         }
         else return null;
     }

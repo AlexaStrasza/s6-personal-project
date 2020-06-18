@@ -38,8 +38,7 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        http.cors().and().csrf().disable().authorizeRequests()
-                .antMatchers(ROOT_PATTERN).authenticated();
+        http.authorizeRequests().antMatchers(ROOT_PATTERN).authenticated();
     }
 
     @Bean

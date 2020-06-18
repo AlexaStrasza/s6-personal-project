@@ -46,8 +46,8 @@ public class RabbitMessager
 //        properties.setHeader("changeType", change);
 //        properties.setHeader("floating", floating);
         Message message = new Message(json.getBytes(), properties);
-//        rabbitTemplate.convertAndSend(directExchange, auctionUserCreate, message);
+        rabbitTemplate.convertAndSend(directExchange, auctionUserCreate, message);
         rabbitTemplate.convertAndSend(directExchange, currencyUserCreate, message);
-//        rabbitTemplate.convertAndSend(directExchange, inventoryUserCreate, message);
+        rabbitTemplate.convertAndSend(directExchange, inventoryUserCreate, message);
     }
 }

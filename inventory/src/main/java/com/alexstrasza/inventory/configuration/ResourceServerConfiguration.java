@@ -13,15 +13,29 @@ import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.io.IOException;
 
 import static org.apache.commons.codec.Charsets.UTF_8;
+import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
 @EnableResourceServer
 @EnableConfigurationProperties(SecurityProperties.class)
 public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter {
+
+    private static final RequestMatcher PUBLIC_URLS = new OrRequestMatcher(
+//            new AntPathRequestMatcher("/users/login/**"),
+            new AntPathRequestMatcher("/inventory/testing/**"),
+            new AntPathRequestMatcher("/error/**")
+    );
+
+    private static final RequestMatcher PROTECTED_URLS = new NegatedRequestMatcher(PUBLIC_URLS);
+
 
     private static final String ROOT_PATTERN = "/**";
 
@@ -38,8 +52,22 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        http.cors().and().csrf().disable().authorizeRequests()
-                .antMatchers(ROOT_PATTERN).authenticated();
+//        http.cors().and().csrf().disable().authorizeRequests()
+//                .antMatchers(ROOT_PATTERN).authenticated();
+        http
+                .sessionManagement()
+                .sessionCreationPolicy(STATELESS)
+                // this entry point handles when you request a protected page and you are not yet
+                // authenticated
+                .and()
+                .authorizeRequests()
+                .requestMatchers(PROTECTED_URLS)
+                .authenticated()
+                .and()
+                .csrf().disable()
+                .formLogin().disable()
+                .httpBasic().disable()
+                .logout().disable();
     }
 
     @Bean

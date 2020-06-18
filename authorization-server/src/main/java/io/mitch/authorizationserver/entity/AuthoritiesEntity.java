@@ -5,7 +5,7 @@ import io.mitch.authorizationserver.service.Authority;
 import javax.persistence.*;
 
 @Entity
-@Table(name ="authorities" )
+@Table(name ="authorities")
 public class AuthoritiesEntity {
 
     @Id

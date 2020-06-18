@@ -1,10 +1,12 @@
 package com.alexstrasza.currency.receiver;
 
-import com.alexstrasza.currency.components.CurrencyHolder;
+import com.alexstrasza.currency.components.CurrencyManager;
+import com.alexstrasza.currency.components.RabbitMessager;
 import com.alexstrasza.currency.dao.CurrencyDao;
 import com.alexstrasza.currency.dao.UsersDao;
 import com.alexstrasza.currency.entity.CurrencyEntity;
 import com.alexstrasza.currency.entity.UsersEntity;
+import com.alexstrasza.currency.models.DataContainer;
 import com.alexstrasza.currency.models.UserModel;
 import com.alexstrasza.currency.models.WinLossObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,13 +16,17 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.xml.crypto.Data;
 import java.nio.charset.StandardCharsets;
 
 @Component
 public class MessageReceiver
 {
     @Autowired
-    CurrencyHolder currency;
+    CurrencyManager currency;
+
+    @Autowired
+    RabbitMessager messager;
 
     @Autowired
     private UsersDao userDao;
@@ -41,11 +47,13 @@ public class MessageReceiver
         {
             e.printStackTrace();
         }
-        UsersEntity entity = new UsersEntity(user.getUsername());
-        userDao.save(entity);
-        CurrencyEntity currencyEntity = new CurrencyEntity(entity, 10000);
-        currencyDao.save(currencyEntity);
-//        currency.CreateNewPlayer(entity.getUsername(), 10000); // Giving new players 10k for testing
+        UsersEntity test = userDao.findByUsername(user.getUsername());
+        if (test == null)
+        {
+            UsersEntity entity = new UsersEntity(user.getUsername());
+            CurrencyEntity currencyEntity = new CurrencyEntity(entity, 10000);
+            currencyDao.save(currencyEntity);
+        }
     }
 
     @RabbitListener(queues = "${alexstrasza.queue.currency.auctionProcessing}")
@@ -64,4 +72,40 @@ public class MessageReceiver
             currency.Withdraw(user, item.auctionId);
         }
     }
+
+    @RabbitListener(queues = "${alexstrasza.queue.currency.bids}")
+    public void bidPlacement(Message message) throws JsonProcessingException
+    {
+        String auctionId = message.getMessageProperties().getHeader("auctionId").toString();
+        String user = message.getMessageProperties().getHeader("user").toString();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        DataContainer data = null;
+        data = objectMapper.readValue(new String(message.getBody(), StandardCharsets.UTF_8), DataContainer.class);
+
+        int result = currency.Bid(data.heldInt, user, auctionId);
+
+        if (result == 1)
+        {
+            messager.ReplyBid(data, auctionId, user);
+        }
+    }
+
+//    @RabbitListener(queues = "${alexstrasza.queue.currency.buyout}")
+//    public void buyoutPlacement(Message message) throws JsonProcessingException
+//    {
+//        String auctionId = message.getMessageProperties().getHeader("auctionId").toString();
+//        String user = message.getMessageProperties().getHeader("user").toString();
+//
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        DataContainer data = null;
+//        data = objectMapper.readValue(new String(message.getBody(), StandardCharsets.UTF_8), DataContainer.class);
+//
+//        int result = currency.Buyout(data.heldInt, user, auctionId);
+//
+//        if (result == 1)
+//        {
+//            messager.ReplyBuyout(data, auctionId, user);
+//        }
+//    }
 }

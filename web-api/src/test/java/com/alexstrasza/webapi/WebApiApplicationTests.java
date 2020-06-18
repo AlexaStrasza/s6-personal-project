@@ -3,11 +3,11 @@ package com.alexstrasza.webapi;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class WebApiApplicationTests {
-
-	@Test
-	void contextLoads() {
-	}
-
-}
+//@SpringBootTest
+//class WebApiApplicationTests {
+//
+//	@Test
+//	void contextLoads() {
+//	}
+//
+//}

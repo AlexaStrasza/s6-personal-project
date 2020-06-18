@@ -1,13 +1,17 @@
 package com.alexstrasza.currency.components;
 
 import com.alexstrasza.currency.dao.CurrencyDao;
+import com.alexstrasza.currency.dao.UsersDao;
 import com.alexstrasza.currency.entity.CurrencyEntity;
 import com.alexstrasza.currency.entity.InvestmentEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
-public class CurrencyHolder
+@Transactional
+public class CurrencyManager
 {
     @Autowired
     RabbitMessager messager;
@@ -15,9 +19,12 @@ public class CurrencyHolder
     @Autowired
     private CurrencyDao currencyDao;
 
+    @Autowired
+    private UsersDao userDao;
+
     public void ChangeCurrency(String user, int amount)
     {
-        CurrencyEntity entity = currencyDao.getCurrencyObjByUser(user);
+        CurrencyEntity entity = GetCurrencyObj(user);
         System.out.println(entity);
         if (entity != null)
         {
@@ -30,9 +37,14 @@ public class CurrencyHolder
         }
     }
 
+    private CurrencyEntity GetCurrencyObj(String user)
+    {
+         return currencyDao.findByUser(userDao.findByUsername(user));
+    }
+
     public String Withdraw(String user, String auctionId)
     {
-        CurrencyEntity entity = currencyDao.getCurrencyObjByUser(user);
+        CurrencyEntity entity = GetCurrencyObj(user);
         if (entity == null) return "User not found.";
         InvestmentEntity investment = entity.getInvestedAuction(auctionId);
         if (investment == null) return "Error withdrawing offer. User has not bid on given auction.";
@@ -52,8 +64,8 @@ public class CurrencyHolder
 
     public String PayAuction(String user, String auctionId, String payTo)
     {
-        CurrencyEntity entity = currencyDao.getCurrencyObjByUser(user);
-        CurrencyEntity entityPayTo = currencyDao.getCurrencyObjByUser(payTo);
+        CurrencyEntity entity = GetCurrencyObj(user);
+        CurrencyEntity entityPayTo = GetCurrencyObj(payTo);
         if (entity == null || entityPayTo == null) return "User not found.";
         InvestmentEntity investment = entity.getInvestedAuction(auctionId);
         if (investment == null) return "Error paying auction. User has not bid on given auction.";
@@ -71,10 +83,10 @@ public class CurrencyHolder
         return "Auction paid";
     }
 
-    public int Bid(String user, String auctionId, int amount)
+    public int Bid(int amount, String user, String auctionId)
     {
 
-        CurrencyEntity entity = currencyDao.getCurrencyObjByUser(user);
+        CurrencyEntity entity = GetCurrencyObj(user);
         if (entity == null) return -1; // User not found
         // When raising an existing bid
         InvestmentEntity investment = entity.getInvestedAuction(auctionId);
@@ -97,7 +109,7 @@ public class CurrencyHolder
         }
         else
         {
-            if (investment.invested > amount) return 2; // Already bidding more
+            if (investment.invested >= amount) return 2; // Already bidding more
             int spending = amount - investment.invested;
             if (entity.ownedCurrency >= spending)
             {
@@ -116,23 +128,62 @@ public class CurrencyHolder
         }
     }
 
+//    public int Buyout(int amount, String user, String auctionId)
+//    {
+//        CurrencyEntity entity = GetCurrencyObj(user);
+//        if (entity == null) return -1; // User not found
+//
+//
+//
+//        // When raising an existing bid
+//        InvestmentEntity investment = entity.getInvestedAuction(auctionId);
+//        if (investment == null) // If null user has not bid on auction before
+//        {
+//            if (entity.ownedCurrency >= amount)
+//            {
+//                investment = new InvestmentEntity(auctionId, amount);
+//                entity.investedAuctions.add(investment);
+//                entity.ownedCurrency -= amount;
+//                entity.floatingCurrency += amount;
+//                currencyDao.save(entity);
+//
+//                messager.SendCurrencyUpdate(amount, user, "remove", "false");
+//                messager.SendCurrencyUpdate(amount, user, "add", "true");
+//
+//                return 1; // Successfully placed bid
+//            }
+//            else return 0; // Not enough currency
+//        }
+//        else
+//        {
+//            if (investment.invested > amount) return 2; // Already bidding more
+//            int spending = amount - investment.invested;
+//            if (entity.ownedCurrency >= spending)
+//            {
+//                investment.invested = amount;
+//
+//                entity.ownedCurrency -= spending;
+//                entity.floatingCurrency += spending;
+//
+//                currencyDao.save(entity);
+//
+//                messager.SendCurrencyUpdate(spending, user, "remove", "false");
+//                messager.SendCurrencyUpdate(spending, user, "add", "true");
+//                return 1; // Successfully placed bid
+//            }
+//            else return 0; // Not enough currency
+//        }
+//    }
+
     public int GetCurrency(String user)
     {
-        CurrencyEntity entity = currencyDao.getCurrencyObjByUser(user);
+        CurrencyEntity entity = GetCurrencyObj(user);
         return entity.ownedCurrency;
     }
 
     public int GetFloatingCurrency(String user)
     {
-        CurrencyEntity entity = currencyDao.getCurrencyObjByUser(user);
+        CurrencyEntity entity = GetCurrencyObj(user);
         return entity.floatingCurrency;
-    }
-
-    public void CreatePlayerForTesting()
-    {
-        System.out.println("Creating some player data");
-//        CreateNewPlayer("User 1", 10000);
-//        CreateNewPlayer("User 2", 9000);
-//        CreateNewPlayer("User 3", 8000);
     }
 }

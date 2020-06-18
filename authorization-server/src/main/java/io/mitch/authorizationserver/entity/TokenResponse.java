@@ -6,6 +6,8 @@ public class TokenResponse {
     @JsonProperty
     private String access_token;
 
+    public String username;
+
     public String getAccess_token() {
         return access_token;
     }

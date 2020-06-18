@@ -1,9 +1,8 @@
 package com.alexstrasza.currency.controller;
 
-import com.alexstrasza.currency.components.CurrencyHolder;
+import com.alexstrasza.currency.components.CurrencyManager;
 import com.alexstrasza.currency.models.DataContainer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -14,28 +13,28 @@ import java.security.Principal;
 public class CurrencyController
 {
     @Autowired
-    CurrencyHolder currency;
+    CurrencyManager currency;
 
     // Retrieve player currency
-    @PostMapping("retrieveBalance")
-    public int RetrieveBalance(@RequestBody DataContainer user, Principal principal)
+    @GetMapping("retrieveBalance")
+    public int RetrieveBalance(Principal principal)
     {
         return currency.GetCurrency(principal.getName());
     }
 
     // Retrieve floating currency
-    @PostMapping("retrieveFloating")
-    public int RetrieveFloating(@RequestBody DataContainer user, Principal principal)
+    @GetMapping("retrieveFloating")
+    public int RetrieveFloating(Principal principal)
     {
         return currency.GetFloatingCurrency(principal.getName());
     }
 
     // Raise/bid, returns if successful or not
-    @PostMapping("placeBid")
-    public int PlaceBid(@RequestBody DataContainer amount, @RequestHeader String auctionId, Principal principal)
-    {
-        return currency.Bid(principal.getName(), auctionId, amount.heldInt);
-    }
+//    @PostMapping("placeBid")
+//    public int PlaceBid(@RequestBody DataContainer amount, @RequestHeader String auctionId, Principal principal)
+//    {
+//        return currency.Bid(principal.getName(), auctionId, amount.heldInt);
+//    }
 //    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("testing")
     public void testing()

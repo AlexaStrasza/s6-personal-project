@@ -26,6 +26,18 @@ public class MessagingConfig
     @Value("${alexstrasza.routing.currency.userCreate}")
     private String userCreationRouting;
 
+    @Value("${alexstrasza.queue.currency.bids}")
+    private String bidQueue;
+
+    @Value("${alexstrasza.routing.currency.bids}")
+    private String bidRouting;
+
+    @Value("${alexstrasza.queue.currency.buyout}")
+    private String buyoutQueue;
+
+    @Value("${alexstrasza.routing.currency.buyout}")
+    private String buyoutRouting;
+
     @Bean
     public DirectExchange directExchange()
     {
@@ -45,6 +57,19 @@ public class MessagingConfig
     }
 
     @Bean
+    public Queue bidQueue()
+    {
+        return new Queue(bidQueue);
+    }
+
+    @Bean
+    public Queue buyoutQueue()
+    {
+        return new Queue(buyoutQueue);
+    }
+
+
+    @Bean
     public Binding auctionProcessingBinding(Queue auctionProcessingQueue, DirectExchange directExchange)
     {
         return BindingBuilder.bind(auctionProcessingQueue).to(directExchange).with(auctionProcessingRouting);
@@ -54,5 +79,17 @@ public class MessagingConfig
     public Binding userCreationBinding(Queue userCreationQueue, DirectExchange directExchange)
     {
         return BindingBuilder.bind(userCreationQueue).to(directExchange).with(userCreationRouting);
+    }
+
+    @Bean
+    public Binding bidBinding(Queue bidQueue, DirectExchange directExchange)
+    {
+        return BindingBuilder.bind(bidQueue).to(directExchange).with(bidRouting);
+    }
+
+    @Bean
+    public Binding buyoutBinding(Queue buyoutQueue, DirectExchange directExchange)
+    {
+        return BindingBuilder.bind(buyoutQueue).to(directExchange).with(buyoutRouting);
     }
 }

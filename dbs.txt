@@ -1,0 +1,4 @@
+docker run -p 3306:3306 --name authentication-mysql -e MYSQL_DATABASE=authentication -e MYSQL_ROOT_PASSWORD=password -d mysql:latest
+docker run -p 3307:3306 --name currency-mysql -e MYSQL_DATABASE=currency -e MYSQL_ROOT_PASSWORD=password -d mysql:latest
+docker run -p 3308:3306 --name inventory-mysql -e MYSQL_DATABASE=inventory -e MYSQL_ROOT_PASSWORD=password -d mysql:latest
+docker run -p 3309:3306 --name auction-mysql -e MYSQL_DATABASE=auction -e MYSQL_ROOT_PASSWORD=password -d mysql:latest

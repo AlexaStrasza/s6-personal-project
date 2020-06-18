@@ -1,15 +1,17 @@
 package io.mitch.authorizationserver.entity;
 
+import org.springframework.security.core.userdetails.UserDetails;
+
 import javax.persistence.*;
 import java.util.Set;
 
 @Entity
 @Table(name = "users")
-public class UsersEntity {
-
+public class UsersEntity
+{
     private String password;
     @Id
-    @Column(columnDefinition = "VARCHAR(15)")
+    @Column(columnDefinition = "VARCHAR(24)")
     private String username;
 
     @Column(name = "account_non_expired")

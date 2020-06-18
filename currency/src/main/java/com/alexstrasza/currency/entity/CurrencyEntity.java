@@ -2,66 +2,24 @@ package com.alexstrasza.currency.entity;
 
 import javax.persistence.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Entity
-@Table(name = "currency", uniqueConstraints=@UniqueConstraint(columnNames="username"))
+@Table(name = "currency", uniqueConstraints=@UniqueConstraint(columnNames="user"))
 public class CurrencyEntity
 {
-    public UsersEntity getUsername()
-    {
-        return username;
-    }
-
-    public void setUsername(UsersEntity user)
-    {
-        this.username = user;
-    }
-
-    public int getOwnedCurrency()
-    {
-        return ownedCurrency;
-    }
-
-    public void setOwnedCurrency(int ownedCurrency)
-    {
-        this.ownedCurrency = ownedCurrency;
-    }
-
-    public int getFloatingCurrency()
-    {
-        return floatingCurrency;
-    }
-
-    public void setFloatingCurrency(int floatingCurrency)
-    {
-        this.floatingCurrency = floatingCurrency;
-    }
-
-    public List<InvestmentEntity> getInvestedAuctions()
-    {
-        return investedAuctions;
-    }
-
-    public void setInvestedAuctions(List<InvestmentEntity> investedAuctions)
-    {
-        this.investedAuctions = investedAuctions;
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public int id;
 
-    @OneToOne
-    @JoinColumn(name = "username")
-    public UsersEntity username;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user")
+    public UsersEntity user;
 
     public int ownedCurrency;
     public int floatingCurrency;
 
-    @OneToMany(cascade=CascadeType.ALL, orphanRemoval = true )
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     public List<InvestmentEntity> investedAuctions = new ArrayList<>();
 
     public CurrencyEntity()
@@ -70,13 +28,13 @@ public class CurrencyEntity
 
     public CurrencyEntity(UsersEntity user)
     {
-        this.username = user;
+        this.user = user;
         ownedCurrency = 0;
     }
 
     public CurrencyEntity(UsersEntity user, int amount)
     {
-        this.username = user;
+        this.user = user;
         ownedCurrency = amount;
     }
 
@@ -88,4 +46,6 @@ public class CurrencyEntity
         }
         return null;
     }
+
+
 }

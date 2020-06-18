@@ -1,39 +1,36 @@
 package com.alexstrasza.inventory.controller;
 
-import com.alexstrasza.inventory.components.InventoryHolder;
+import com.alexstrasza.inventory.components.InventoryManager;
 import com.alexstrasza.inventory.components.RabbitMessager;
 import com.alexstrasza.inventory.models.AuctionCreationObject;
 import com.alexstrasza.inventory.models.DataContainer;
-import com.alexstrasza.inventory.models.ItemBase;
-import com.alexstrasza.inventory.models.PlayerInventory;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageProperties;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import com.alexstrasza.inventory.entity.ItemBase;
+import com.alexstrasza.inventory.entity.InventoryEntity;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
+@CrossOrigin
 @RestController
 @RequestMapping("inventory/")
 public class InventoryController
 {
     @Autowired
-    InventoryHolder inventory;
+    RabbitMessager messager;
 
     @Autowired
-    RabbitMessager messager;
+    InventoryManager inventory;
 
     // post auction
     @PostMapping("createNewAuction")
-    public String CreateNewAuction(@RequestBody AuctionCreationObject auctionData, @RequestHeader String user)
+    public String CreateNewAuction(@RequestBody AuctionCreationObject auctionData, Principal principal)
     {
-        if (inventory.GetInventory(user).DoesPlayerOwnItems(auctionData.itemId, auctionData.amount))
+        if (inventory.GetInventory(principal.getName()).DoesPlayerOwnItems(auctionData.itemId, auctionData.amount))
         {
-            messager.SendAuctionCreation(auctionData, user);
+            messager.SendAuctionCreation(auctionData, principal.getName());
 
-            inventory.RemoveItemFromPlayer(user, new ItemBase(auctionData.itemId, auctionData.amount));
+            inventory.RemoveItemFromPlayer(principal.getName(), new ItemBase(auctionData.itemId, auctionData.amount));
             return "Auction Placed";
         }
         return "Item not owned";
@@ -44,22 +41,22 @@ public class InventoryController
     {
         System.out.println("Creating some player data");
 
-        inventory.CreateInventory("User 1");
-        inventory.CreateInventory("User 2");
-        inventory.CreateInventory("User 3");
-
-        inventory.AddItemToPlayer("User 1", new ItemBase(0, 1));
-        inventory.AddItemToPlayer("User 1", new ItemBase(1, 1));
-        inventory.AddItemToPlayer("User 1", new ItemBase(3, 101));
-        inventory.AddItemToPlayer("User 2", new ItemBase(0, 1));
-        inventory.AddItemToPlayer("User 2", new ItemBase(2, 1));
-        inventory.AddItemToPlayer("User 2", new ItemBase(3, 203));
+//        inventory.CreateInventory("User 1");
+//        inventory.CreateInventory("User 2");
+//        inventory.CreateInventory("User 3");
+//
+//        inventory.AddItemToPlayer("User 1", new ItemBase(0, 1));
+//        inventory.AddItemToPlayer("User 1", new ItemBase(1, 1));
+//        inventory.AddItemToPlayer("User 1", new ItemBase(3, 101));
+//        inventory.AddItemToPlayer("User 2", new ItemBase(0, 1));
+//        inventory.AddItemToPlayer("User 2", new ItemBase(2, 1));
+//        inventory.AddItemToPlayer("User 2", new ItemBase(3, 203));
     }
 
         // retrieve inventory
     @PostMapping("retrieveInventory")
-    public PlayerInventory retrieveInventory(@RequestBody DataContainer user)
+    public InventoryEntity retrieveInventory(@RequestBody DataContainer user, Principal principal)
     {
-        return inventory.GetInventory(user.heldString);
+        return inventory.GetInventory(principal.getName());
     }
 }

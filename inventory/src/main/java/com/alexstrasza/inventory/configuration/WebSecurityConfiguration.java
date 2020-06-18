@@ -4,5 +4,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-public class WebSecurityConfiguration extends GlobalMethodSecurityConfiguration {
+public class WebSecurityConfiguration extends GlobalMethodSecurityConfiguration
+{
 }

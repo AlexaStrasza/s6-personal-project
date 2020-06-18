@@ -16,11 +16,11 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="auctioning" target="1.8" />
-      <module name="authorization-server" target="1.8" />
+      <module name="authorization-server" target="11" />
       <module name="currency" target="11" />
       <module name="gateway" target="11" />
       <module name="inventory" target="11" />
-      <module name="web-api" target="1.8" />
+      <module name="web-api" target="11" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
