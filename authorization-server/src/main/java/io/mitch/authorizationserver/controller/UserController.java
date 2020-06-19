@@ -2,7 +2,7 @@ package io.mitch.authorizationserver.controller;
 
 
 import Messages.UserModel;
-import io.mitch.authorizationserver.components.RabbitMessager;
+import io.mitch.authorizationserver.components.RabbitMessenger;
 import io.mitch.authorizationserver.dao.UsersDao;
 import io.mitch.authorizationserver.entity.AuthoritiesEntity;
 import io.mitch.authorizationserver.entity.TokenResponse;
@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -30,7 +29,7 @@ import java.util.HashSet;
 public class UserController {
 
     @Autowired
-    RabbitMessager messager;
+    RabbitMessenger messenger;
 
     private UsersDao applicationUserRepository;
     private PasswordEncoder bCryptPasswordEncoder;
@@ -52,8 +51,7 @@ public class UserController {
         user.setAuthorities(set);
         user = applicationUserRepository.save(user);
         if(user != null){
-            messager.NotifyUserCreation(new UserModel(user.getUsername(), "email"));
-//            kafkaKafkaTemplate.send("Kwetter",new UserModel(user.getUsername(),"email"));
+            messenger.NotifyUserCreation(new UserModel(user.getUsername(), "email"));
         }
 
         return "User created";

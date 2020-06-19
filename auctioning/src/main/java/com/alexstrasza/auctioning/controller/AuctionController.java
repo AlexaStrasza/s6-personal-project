@@ -1,14 +1,10 @@
 package com.alexstrasza.auctioning.controller;
 
 import com.alexstrasza.auctioning.components.AuctionManager;
-import com.alexstrasza.auctioning.components.RabbitMessager;
+import com.alexstrasza.auctioning.components.RabbitMessenger;
 import com.alexstrasza.auctioning.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import java.security.Principal;
 
@@ -19,7 +15,7 @@ public class AuctionController
     private String url = "http://localhost:8084/currency/";
 
     @Autowired
-    RabbitMessager rabbitMessager;
+    RabbitMessenger rabbitMessenger;
 
     @Autowired
     AuctionManager auctioning;
@@ -75,7 +71,7 @@ public class AuctionController
         if (auction.creator.equals(principal.getName())) return "Can't place bids on own auction.";
         if (auction.GetPriceTotal() >= amount.heldInt) return "Offer below minimum offer.";
         if (auction.auctionEnded) return "This auction has ended";
-        rabbitMessager.SendBid(amount, auctionId, principal.getName());
+        rabbitMessenger.SendBid(amount, auctionId, principal.getName());
         return "Sending bid offer";
     }
 }

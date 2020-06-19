@@ -1,7 +1,7 @@
 package com.alexstrasza.currency.receiver;
 
 import com.alexstrasza.currency.components.CurrencyManager;
-import com.alexstrasza.currency.components.RabbitMessager;
+import com.alexstrasza.currency.components.RabbitMessenger;
 import com.alexstrasza.currency.dao.CurrencyDao;
 import com.alexstrasza.currency.dao.UsersDao;
 import com.alexstrasza.currency.entity.CurrencyEntity;
@@ -16,7 +16,6 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.xml.crypto.Data;
 import java.nio.charset.StandardCharsets;
 
 @Component
@@ -26,7 +25,7 @@ public class MessageReceiver
     CurrencyManager currency;
 
     @Autowired
-    RabbitMessager messager;
+    RabbitMessenger messenger;
 
     @Autowired
     private UsersDao userDao;
@@ -87,7 +86,7 @@ public class MessageReceiver
 
         if (result == 1)
         {
-            messager.ReplyBid(data, auctionId, user);
+            messenger.ReplyBid(data, auctionId, user);
         }
     }
 

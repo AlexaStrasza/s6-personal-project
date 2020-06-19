@@ -1,7 +1,7 @@
 package com.alexstrasza.auctioning.receiver;
 
 import com.alexstrasza.auctioning.components.AuctionManager;
-import com.alexstrasza.auctioning.components.RabbitMessager;
+import com.alexstrasza.auctioning.components.RabbitMessenger;
 import com.alexstrasza.auctioning.dao.UsersDao;
 import com.alexstrasza.auctioning.entity.UsersEntity;
 import com.alexstrasza.auctioning.models.*;
@@ -21,7 +21,7 @@ public class MessageReceiver {
     private AuctionManager auctioning;
 
     @Autowired
-    RabbitMessager rabbitMessager;
+    RabbitMessenger rabbitMessenger;
 
     @Autowired
     private UsersDao userDao;
@@ -44,20 +44,6 @@ public class MessageReceiver {
         {
             UsersEntity entity = new UsersEntity(user.getUsername());
             userDao.save(entity);
-
-
-            AuctionCreationObject obj = new AuctionCreationObject();
-            obj.amount = 10;
-            obj.pricePerUnit = 10;
-            obj.allowBuyout = false;
-            obj.itemId = 0;
-            FilterOptions options = new FilterOptions();
-            options.buyout = false;
-            options.name = "Charm of the berserker";
-            options.rarity = "Rare";
-            options.type = "Trinket";
-            obj.filterOptions = options;
-            auctioning.StartAuction(obj, entity.getUsername());
         }
     }
 
@@ -84,7 +70,7 @@ public class MessageReceiver {
         Bid bid = auctioning.PlaceBid(data.heldInt, auctionId, user);
 
         // Notify other subscribed users of new bid
-        rabbitMessager.NotifyBids(bid, auctionId, "false");
+        rabbitMessenger.NotifyBids(bid, auctionId, "false");
     }
 
 //    @RabbitListener(queues = "${alexstrasza.queue.auction.buyout}")

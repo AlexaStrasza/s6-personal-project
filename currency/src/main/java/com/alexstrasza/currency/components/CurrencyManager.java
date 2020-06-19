@@ -5,7 +5,6 @@ import com.alexstrasza.currency.dao.UsersDao;
 import com.alexstrasza.currency.entity.CurrencyEntity;
 import com.alexstrasza.currency.entity.InvestmentEntity;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CurrencyManager
 {
     @Autowired
-    RabbitMessager messager;
+    RabbitMessenger messenger;
 
     @Autowired
     private CurrencyDao currencyDao;
@@ -31,9 +30,9 @@ public class CurrencyManager
             entity.ownedCurrency += amount;
             currencyDao.save(entity);
             if (amount > 0)
-            messager.SendCurrencyUpdate(amount, user, "add", "false");
+            messenger.SendCurrencyUpdate(amount, user, "add", "false");
             else
-            messager.SendCurrencyUpdate(amount, user, "remove", "false");
+            messenger.SendCurrencyUpdate(amount, user, "remove", "false");
         }
     }
 
@@ -56,8 +55,8 @@ public class CurrencyManager
 
         currencyDao.save(entity);
 
-        messager.SendCurrencyUpdate(regainedCurrency, user, "add", "false");
-        messager.SendCurrencyUpdate(regainedCurrency, user, "remove", "true");
+        messenger.SendCurrencyUpdate(regainedCurrency, user, "add", "false");
+        messenger.SendCurrencyUpdate(regainedCurrency, user, "remove", "true");
 
         return "Offer withdrawn";
     }
@@ -78,8 +77,8 @@ public class CurrencyManager
         currencyDao.save(entity);
         currencyDao.save(entityPayTo);
 
-        messager.SendCurrencyUpdate(currencyChange, user, "remove", "true");
-        messager.SendCurrencyUpdate(currencyChange, payTo, "add", "false");
+        messenger.SendCurrencyUpdate(currencyChange, user, "remove", "true");
+        messenger.SendCurrencyUpdate(currencyChange, payTo, "add", "false");
         return "Auction paid";
     }
 
@@ -100,8 +99,8 @@ public class CurrencyManager
                 entity.floatingCurrency += amount;
                 currencyDao.save(entity);
 
-                messager.SendCurrencyUpdate(amount, user, "remove", "false");
-                messager.SendCurrencyUpdate(amount, user, "add", "true");
+                messenger.SendCurrencyUpdate(amount, user, "remove", "false");
+                messenger.SendCurrencyUpdate(amount, user, "add", "true");
 
                 return 1; // Successfully placed bid
             }
@@ -120,8 +119,8 @@ public class CurrencyManager
 
                 currencyDao.save(entity);
 
-                messager.SendCurrencyUpdate(spending, user, "remove", "false");
-                messager.SendCurrencyUpdate(spending, user, "add", "true");
+                messenger.SendCurrencyUpdate(spending, user, "remove", "false");
+                messenger.SendCurrencyUpdate(spending, user, "add", "true");
                 return 1; // Successfully placed bid
             }
             else return 0; // Not enough currency

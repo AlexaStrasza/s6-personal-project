@@ -2,10 +2,8 @@ package com.alexstrasza.auctioning.components;
 import com.alexstrasza.auctioning.dao.AuctionDao;
 import com.alexstrasza.auctioning.dao.UsersDao;
 import com.alexstrasza.auctioning.models.*;
-import org.apache.tomcat.util.digester.ArrayStack;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 
@@ -17,7 +15,7 @@ import java.util.*;
 public class AuctionManager
 {
     @Autowired
-    RabbitMessager rabbitMessager;
+    RabbitMessenger rabbitMessenger;
 
     @Autowired
     private AuctionDao auctionDao;
@@ -49,17 +47,17 @@ public class AuctionManager
 
                     if (auction.creator.equals(auction.GetWinner()))
                     {
-                        rabbitMessager.NotifyBids(new Bid(-20, ""), auction.auctionId, "false");
+                        rabbitMessenger.NotifyBids(new Bid(-20, ""), auction.auctionId, "false");
                     }
                     else
                     {
-                        rabbitMessager.NotifyBids(new Bid(-10, auction.GetWinner()), auction.auctionId, "false");
+                        rabbitMessenger.NotifyBids(new Bid(-10, auction.GetWinner()), auction.auctionId, "false");
                     }
                     // Do stuff when auction is over
                     // Notify currency service with involved users
-                    rabbitMessager.SendCurrencyUpdate(auction.ConstructWinLossObject(), auction.creator);
+                    rabbitMessenger.SendCurrencyUpdate(auction.ConstructWinLossObject(), auction.creator);
                     // Notify item system for item transfer
-                    rabbitMessager.SendInventoryUpdate(auction.item, auction.GetWinner());
+                    rabbitMessenger.SendInventoryUpdate(auction.item, auction.GetWinner());
                     auctionsToRemove.add(auction);
                 }
             }

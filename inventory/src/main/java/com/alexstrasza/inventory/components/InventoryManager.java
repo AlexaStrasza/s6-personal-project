@@ -8,7 +8,6 @@ import com.alexstrasza.inventory.entity.UsersEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.swing.*;
 import javax.transaction.Transactional;
 
 @Service
@@ -16,7 +15,7 @@ import javax.transaction.Transactional;
 public class InventoryManager
 {
     @Autowired
-    RabbitMessager messager;
+    RabbitMessenger messenger;
 
     @Autowired
     private InventoryDao inventoryDao;
@@ -63,7 +62,7 @@ public class InventoryManager
 
             inventoryDao.save(inventoryEntity);
 
-            messager.SendInventoryUpdate(item, user, "add");
+            messenger.SendInventoryUpdate(item, user, "add");
         }
     }
 
@@ -86,7 +85,7 @@ public class InventoryManager
                         inventoryEntity.inventory.remove(itemBase);
                     }
                     inventoryDao.save(inventoryEntity);
-                    messager.SendInventoryUpdate(item, user, "remove");
+                    messenger.SendInventoryUpdate(item, user, "remove");
                     return true;
                 }
             }

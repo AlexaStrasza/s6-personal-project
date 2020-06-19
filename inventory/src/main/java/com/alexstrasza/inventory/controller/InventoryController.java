@@ -1,22 +1,15 @@
 package com.alexstrasza.inventory.controller;
 
 import com.alexstrasza.inventory.components.InventoryManager;
-import com.alexstrasza.inventory.components.RabbitMessager;
+import com.alexstrasza.inventory.components.RabbitMessenger;
 import com.alexstrasza.inventory.dao.InventoryDao;
 import com.alexstrasza.inventory.dao.UsersDao;
-import com.alexstrasza.inventory.entity.UsersEntity;
 import com.alexstrasza.inventory.models.AuctionCreationObject;
-import com.alexstrasza.inventory.models.DataContainer;
 import com.alexstrasza.inventory.entity.ItemBase;
 import com.alexstrasza.inventory.entity.InventoryEntity;
-import com.alexstrasza.inventory.models.UserModel;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 
 @CrossOrigin
@@ -25,7 +18,7 @@ import java.security.Principal;
 public class InventoryController
 {
     @Autowired
-    RabbitMessager messager;
+    RabbitMessenger messenger;
 
     @Autowired
     InventoryManager inventory;
@@ -43,7 +36,7 @@ public class InventoryController
     {
         if (inventory.GetInventory(principal.getName()).DoesPlayerOwnItems(auctionData.itemId, auctionData.amount))
         {
-            messager.SendAuctionCreation(auctionData, principal.getName());
+            messenger.SendAuctionCreation(auctionData, principal.getName());
 
             inventory.RemoveItemFromPlayer(principal.getName(), new ItemBase(auctionData.itemId, auctionData.amount));
             return "Auction Placed";

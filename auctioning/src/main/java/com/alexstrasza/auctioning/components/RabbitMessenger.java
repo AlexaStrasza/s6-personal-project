@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import javax.xml.crypto.Data;
 
 @Component
-public class RabbitMessager
+public class RabbitMessenger
 {
     @Value("${alexstrasza.rabbit.exchange}")
     private String directExchange;
