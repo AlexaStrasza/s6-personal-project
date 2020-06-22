@@ -1,4 +1,4 @@
-package io.mitch.authorizationserver.entity;
+package com.alexstrasza.authentication.entity;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 

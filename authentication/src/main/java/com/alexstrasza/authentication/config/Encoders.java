@@ -1,4 +1,4 @@
-package io.mitch.authorizationserver.config;
+package com.alexstrasza.authentication.config;
 
 
 import org.springframework.context.annotation.Bean;

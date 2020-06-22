@@ -1,4 +1,4 @@
-package io.mitch.authorizationserver.service;
+package com.alexstrasza.authentication.service;
 
 public enum Authority {
 

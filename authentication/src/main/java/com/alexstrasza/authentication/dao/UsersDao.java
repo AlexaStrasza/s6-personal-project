@@ -1,6 +1,6 @@
-package io.mitch.authorizationserver.dao;
+package com.alexstrasza.authentication.dao;
 
-import io.mitch.authorizationserver.entity.UsersEntity;
+import com.alexstrasza.authentication.entity.UsersEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UsersDao extends JpaRepository<UsersEntity,Long> {

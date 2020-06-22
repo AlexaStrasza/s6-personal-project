@@ -1,4 +1,4 @@
-package io.mitch.authorizationserver.components;
+package com.alexstrasza.authentication.components;
 
 import Messages.UserModel;
 import com.fasterxml.jackson.core.JsonProcessingException;

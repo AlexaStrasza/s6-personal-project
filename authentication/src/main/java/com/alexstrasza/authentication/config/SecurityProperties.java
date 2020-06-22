@@ -1,4 +1,4 @@
-package io.mitch.authorizationserver.config;
+package com.alexstrasza.authentication.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.io.Resource;

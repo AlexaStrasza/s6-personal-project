@@ -1,9 +1,9 @@
-package io.mitch.authorizationserver.service;
+package com.alexstrasza.authentication.service;
 
-import io.mitch.authorizationserver.config.Users;
-import io.mitch.authorizationserver.dao.UsersDao;
-import io.mitch.authorizationserver.entity.AuthoritiesEntity;
-import io.mitch.authorizationserver.entity.UsersEntity;
+import com.alexstrasza.authentication.dao.UsersDao;
+import com.alexstrasza.authentication.config.Users;
+import com.alexstrasza.authentication.entity.AuthoritiesEntity;
+import com.alexstrasza.authentication.entity.UsersEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

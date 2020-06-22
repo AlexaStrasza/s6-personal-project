@@ -1,6 +1,6 @@
-package io.mitch.authorizationserver.entity;
+package com.alexstrasza.authentication.entity;
 
-import io.mitch.authorizationserver.service.Authority;
+import com.alexstrasza.authentication.service.Authority;
 
 import javax.persistence.*;
 

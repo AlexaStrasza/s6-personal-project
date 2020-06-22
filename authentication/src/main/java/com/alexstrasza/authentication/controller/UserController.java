@@ -1,13 +1,13 @@
-package io.mitch.authorizationserver.controller;
+package com.alexstrasza.authentication.controller;
 
 
 import Messages.UserModel;
-import io.mitch.authorizationserver.components.RabbitMessenger;
-import io.mitch.authorizationserver.dao.UsersDao;
-import io.mitch.authorizationserver.entity.AuthoritiesEntity;
-import io.mitch.authorizationserver.entity.TokenResponse;
-import io.mitch.authorizationserver.entity.UsersEntity;
-import io.mitch.authorizationserver.service.Authority;
+import com.alexstrasza.authentication.dao.UsersDao;
+import com.alexstrasza.authentication.components.RabbitMessenger;
+import com.alexstrasza.authentication.entity.AuthoritiesEntity;
+import com.alexstrasza.authentication.entity.TokenResponse;
+import com.alexstrasza.authentication.entity.UsersEntity;
+import com.alexstrasza.authentication.service.Authority;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -41,7 +41,11 @@ public class UserController {
 
     @PostMapping("/sign-up")
     public String signUp(@RequestBody UsersEntity user) {
-        if(applicationUserRepository.findByUsername(user.getUsername()) != null) return "User already exists with that username.";
+        if(applicationUserRepository.findByUsername(user.getUsername()) != null)
+        {
+            System.out.println("User already exists with that username.");
+            return "User already exists with that username.";
+        }
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         user.setAccountNonExpired(true);
         user.setCredentialsNonExpired(true);
@@ -53,20 +57,26 @@ public class UserController {
         if(user != null){
             messenger.NotifyUserCreation(new UserModel(user.getUsername(), "email"));
         }
-
+        System.out.println("User created");
         return "User created";
     }
 
     @PostMapping("/login")
     public TokenResponse login(@RequestBody UsersEntity usersEntity)
     {
-        if(applicationUserRepository.findByUsername(usersEntity.getUsername()) == null) return null;
+        System.out.println("Attempting login");
+        if(applicationUserRepository.findByUsername(usersEntity.getUsername()) == null)
+        {
+            System.out.println("Attempted to login with nonexistant user");
+            return null;
+        }
         RestTemplate template = new RestTemplate();
         HttpHeaders header = createHeaders("clientId","client-secret");
         MultiValueMap<String,String> map = new LinkedMultiValueMap<String,String>();
         map.add("username",usersEntity.getUsername());
         map.add("password",usersEntity.getPassword());
         map.add("grant_type","password");
+        System.out.println("Doing the oauth/token thing");
         HttpEntity<MultiValueMap<String,String>> request = new HttpEntity<MultiValueMap<String, String>>(map,header);
         ResponseEntity<TokenResponse> response = template.postForEntity("http://localhost:8082/oauth/token", request, TokenResponse.class);
 

@@ -1,6 +1,4 @@
-package io.mitch.authorizationserver.entity;
-
-import org.springframework.security.core.userdetails.UserDetails;
+package com.alexstrasza.authentication.entity;
 
 import javax.persistence.*;
 import java.util.Set;
