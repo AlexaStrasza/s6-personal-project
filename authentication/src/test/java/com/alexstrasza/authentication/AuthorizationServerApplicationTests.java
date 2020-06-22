@@ -1,4 +1,4 @@
-package io.mitch.authorizationserver;
+package com.alexstrasza.authentication;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

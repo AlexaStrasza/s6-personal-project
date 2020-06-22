@@ -1,7 +1,19 @@
-FROM ubuntu:18.04
+FROM openjdk:15-jdk-alpine as build
+WORKDIR /workspace/app
 
-COPY ./face/target/smilei-face-0.0.1-SNAPSHOT.jar /opt
-RUN apt update -y \
-    && apt install -y openjdk-11-jre
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
+COPY src src
 
-ENTRYPOINT java -jar /opt/face-0.0.1-SNAPSHOT.jar -Djava.net.preferIPv4Stack=true
+RUN ./mvnw install -DskipTests
+
+FROM openjdk:15-jdk-alpine
+VOLUME /tmp
+COPY --from=build /workspace/app/target/*.jar app.jar
+ENTRYPOINT ["java","-jar","/app.jar"]
+
+#FROM openjdk:15-jdk-alpine
+#VOLUME /tmp
+#COPY /target/*.jar app.jar
+#ENTRYPOINT ["java","-jar","/app.jar"]

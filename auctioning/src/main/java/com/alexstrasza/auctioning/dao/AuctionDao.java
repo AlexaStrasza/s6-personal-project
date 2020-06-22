@@ -12,3 +12,4 @@ public interface AuctionDao extends JpaRepository<Auction,Long>
 
     List<Auction> findAllByAuctionEndedIsFalse();
 }
+

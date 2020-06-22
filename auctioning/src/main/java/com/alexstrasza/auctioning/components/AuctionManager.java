@@ -175,7 +175,7 @@ public class AuctionManager
         Calendar calendar = Calendar.getInstance(timeZone);
         auction.auctionStartTime = calendar.getTimeInMillis();
 
-        calendar.add(Calendar.MINUTE, 2);
+        calendar.add(Calendar.MINUTE, 1);
 
         auction.auctionEndTime = calendar.getTimeInMillis();
 

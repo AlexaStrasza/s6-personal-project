@@ -67,7 +67,6 @@ public class AuctionController
     {
         Auction auction = auctioning.GetAuction(auctionId);
         if (auction == null) return "Error placing bid. Auction not found.";
-        System.out.println(principal.getName());
         if (auction.creator.equals(principal.getName())) return "Can't place bids on own auction.";
         if (auction.GetPriceTotal() >= amount.heldInt) return "Offer below minimum offer.";
         if (auction.auctionEnded) return "This auction has ended";
