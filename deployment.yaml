@@ -1,0 +1,444 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: authdb
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: authdb
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: authdb
+spec:
+  selector:
+    matchLabels:
+      app: authdb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: authdb
+    spec:
+      containers:
+        - image: mysql:8.0.20
+          name: authdb
+          env:
+            # Use secret in real usage
+            - name: MYSQL_ROOT_PASSWORD
+              value: 'password'
+            - name: MYSQL_DATABASE
+              value: 'authentication'
+          ports:
+            - containerPort: 3306
+              name: authdb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: currencydb
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: currencydb
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: currencydb
+spec:
+  selector:
+    matchLabels:
+      app: currencydb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: currencydb
+    spec:
+      containers:
+        - image: mysql:8.0.20
+          name: currencydb
+          env:
+            # Use secret in real usage
+            - name: MYSQL_ROOT_PASSWORD
+              value: 'password'
+            - name: MYSQL_DATABASE
+              value: 'currency'
+          ports:
+            - containerPort: 3306
+              name: currencydb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventorydb
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: inventorydb
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: inventorydb
+spec:
+  selector:
+    matchLabels:
+      app: inventorydb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: inventorydb
+    spec:
+      containers:
+        - image: mysql:8.0.20
+          name: inventorydb
+          env:
+            # Use secret in real usage
+            - name: MYSQL_ROOT_PASSWORD
+              value: 'password'
+            - name: MYSQL_DATABASE
+              value: 'inventory'
+          ports:
+            - containerPort: 3306
+              name: inventorydb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auctiondb
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: auctiondb
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: auctiondb
+spec:
+  selector:
+    matchLabels:
+      app: auctiondb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: auctiondb
+    spec:
+      containers:
+        - image: mysql:8.0.20
+          name: auctiondb
+          env:
+            # Use secret in real usage
+            - name: MYSQL_ROOT_PASSWORD
+              value: 'password'
+            - name: MYSQL_DATABASE
+              value: 'auction'
+          ports:
+            - containerPort: 3306
+              name: auctiondb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: message-broker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: message-broker
+  template:
+    metadata:
+      labels:
+        app: message-broker
+    spec:
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+        - name: message-broker
+          image: rabbitmq:3.8-management
+          ports:
+            - containerPort: 5672
+              name: message-broker
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: message-broker
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 5672
+  selector:
+    app: message-broker
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s6-auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: s6-auth
+  template:
+    metadata:
+      labels:
+        app: s6-auth
+    spec:
+      terminationGracePeriodSeconds: 30
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+        - name: s6-auth
+          image: alexstraszacontainerregistry.azurecr.io/s6-authentication:v1
+          imagePullPolicy: "Always"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          ports:
+            - containerPort: 8082
+              name: s6-auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: s6-auth
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8082
+  selector:
+    app: s6-auth
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s6-auction
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: s6-auction
+  template:
+    metadata:
+      labels:
+        app: s6-auction
+    spec:
+      terminationGracePeriodSeconds: 30
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+        - name: s6-auction
+          image: alexstraszacontainerregistry.azurecr.io/s6-auctioning:v1
+          imagePullPolicy: "Always"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          ports:
+            - containerPort: 8085
+              name: s6-auction
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: s6-auction
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8085
+  selector:
+    app: s6-auction
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s6-currency
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: s6-currency
+  template:
+    metadata:
+      labels:
+        app: s6-currency
+    spec:
+      terminationGracePeriodSeconds: 30
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+        - name: s6-currency
+          image: alexstraszacontainerregistry.azurecr.io/s6-currency:v1
+          imagePullPolicy: "Always"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          ports:
+            - containerPort: 8084
+              name: s6-currency
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: s6-currency
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8084
+  selector:
+    app: s6-currency
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s6-inventory
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: s6-inventory
+  template:
+    metadata:
+      labels:
+        app: s6-inventory
+    spec:
+      terminationGracePeriodSeconds: 30
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+        - name: s6-inventory
+          image: alexstraszacontainerregistry.azurecr.io/s6-inventory:v1
+          imagePullPolicy: "Always"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          ports:
+            - containerPort: 8083
+              name: s6-inventory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: s6-inventory
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8083
+  selector:
+    app: s6-inventory
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s6-webapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: s6-webapi
+  template:
+    metadata:
+      labels:
+        app: s6-webapi
+    spec:
+      terminationGracePeriodSeconds: 30
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+        - name: s6-webapi
+          image: alexstraszacontainerregistry.azurecr.io/s6-webapi:v1
+          imagePullPolicy: "Always"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          ports:
+            - containerPort: 8081
+              name: s6-webapi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: s6-webapi
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8081
+  selector:
+    app: s6-webapi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s6-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: s6-gateway
+  template:
+    metadata:
+      labels:
+        app: s6-gateway
+    spec:
+      terminationGracePeriodSeconds: 30
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+        - name: s6-gateway
+          image: alexstraszacontainerregistry.azurecr.io/s6-gateway:v1
+          imagePullPolicy: "Always"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          ports:
+            - containerPort: 8080
+              name: s6-gateway
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: s6-gateway
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8080
+  selector:
+    app: s6-gateway
+---
