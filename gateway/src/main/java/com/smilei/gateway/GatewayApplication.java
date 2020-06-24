@@ -20,12 +20,12 @@ public class GatewayApplication {
 //	private static String CURRENCY = "http://localhost:8084";
 //	private static String AUCTION = "http://localhost:8085";
 
-	private static String WEBSOCKET_URI = "ws://service-webapi:8081";
-	private static String WEBAPI = "http://service-webapi:8081";
-	private static String AUTH = "http://service-authentication:8082";
-	private static String INVENTORY = "http://service-inventory:8083";
-	private static String CURRENCY = "http://service-currency:8084";
-	private static String AUCTION = "http://service-auctioning:8085";
+	private static String WEBSOCKET_URI = "ws://s6-webapi:8081";
+	private static String WEBAPI = "http://s6-webapi:8081";
+	private static String AUTH = "http://s6-authentication:8082";
+	private static String INVENTORY = "http://s6-inventory:8083";
+	private static String CURRENCY = "http://s6-currency:8084";
+	private static String AUCTION = "http://s6-auctioning:8085";
 
 
 	@Bean
