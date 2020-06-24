@@ -13,7 +13,7 @@ pipeline {
     }
 
     stages {
-        stage('Docker cleanup'){
+        stage('Docker cleanup') {
             steps{
 				sh '''
 				docker rmi $(docker images -f 'dangling=true' -q) || true
@@ -48,7 +48,7 @@ pipeline {
 		}
 		stage('kubetcl set') {
         			steps {
-        				sh 'kubectl set image deployment/s6-auth  s6-auth =alexstraszacontainerregistry.azurecr.io/s6-auth:kube${BUILD_NUMBER} --kubeconfig /home/azureuser/.kube/config'
+        				sh 'kubectl set image deployment/s6-auth s6-auth=alexstraszacontainerregistry.azurecr.io/s6-auth:kube${BUILD_NUMBER} --kubeconfig /home/azureuser/.kube/config'
         				sh 'kubectl set image deployment/s6-auctioning s6-auctioning=alexstraszacontainerregistry.azurecr.io/s6-auctioning:kube${BUILD_NUMBER} --kubeconfig /home/azureuser/.kube/config'
         				sh 'kubectl set image deployment/s6-currency s6-currency=alexstraszacontainerregistry.azurecr.io/s6-currency:kube${BUILD_NUMBER} --kubeconfig /home/azureuser/.kube/config'
         				sh 'kubectl set image deployment/s6-inventory s6-inventory=alexstraszacontainerregistry.azurecr.io/s6-inventory:kube${BUILD_NUMBER} --kubeconfig /home/azureuser/.kube/config'
