@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="gateway" />
+        <module name="inventory" />
+        <module name="authentication" />
+        <module name="currency" />
+        <module name="auctioning" />
+        <module name="web-api" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="auctioning" target="11" />
+      <module name="authentication" target="11" />
+      <module name="currency" target="11" />
+      <module name="gateway" target="11" />
+      <module name="inventory" target="11" />
+      <module name="web-api" target="11" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="auctioning" options="-parameters" />
+      <module name="authentication" options="-parameters" />
+      <module name="currency" options="-parameters" />
+      <module name="gateway" options="-parameters" />
+      <module name="inventory" options="-parameters" />
+      <module name="web-api" options="-parameters" />
+    </option>
+  </component>
+</project>

@@ -1,0 +1,101 @@
+﻿version: '3.3'
+services:
+  message-broker:
+    image: rabbitmq:3.8-management
+    hostname: message-broker
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  
+  authentication-mysql:
+    image: mysql:latest
+    hostname: authentication-mysql
+    environment:
+      - MYSQL_DATABASE=authentication
+      - MYSQL_ROOT_PASSWORD=password
+    ports:
+      - "3306:3306"
+
+  currency-mysql:
+    image: mysql:latest
+    hostname: currency-mysql
+    environment:
+      - MYSQL_DATABASE=currency
+      - MYSQL_ROOT_PASSWORD=password
+    ports:
+      - "3307:3306"
+
+  inventory-mysql:
+    image: mysql:latest
+    hostname: inventory-mysql
+    environment:
+      - MYSQL_DATABASE=inventory
+      - MYSQL_ROOT_PASSWORD=password
+    ports:
+      - "3308:3306"
+
+  auction-mysql:
+    image: mysql:latest
+    hostname: auction-mysql
+    environment:
+      - MYSQL_DATABASE=auction
+      - MYSQL_ROOT_PASSWORD=password
+    ports:
+      - "3309:3306"
+
+  service-auctioning:
+    build: ./auctioning
+    hostname: service-auctioning
+    restart: always
+    ports:
+      - "8085:8085"
+    depends_on:
+      - message-broker
+      - auction-mysql
+
+  service-authentication:
+    build: ./authentication
+    hostname: service-authentication
+    restart: always
+    ports:
+      - "8082:8082"
+    depends_on:
+      - message-broker
+      - authentication-mysql
+      
+  service-currency:
+    build: ./currency
+    hostname: service-currency
+    restart: always
+    ports:
+      - "8084:8084"
+    depends_on:
+      - message-broker
+      - currency-mysql
+      
+  service-gateway:
+    build: ./gateway
+    hostname: service-gateway
+    restart: always
+    ports:
+      - "8080:8080"
+      
+  service-inventory:
+    build: ./inventory
+    hostname: service-inventory
+    restart: always
+    ports:
+      - "8083:8083"
+    depends_on:
+      - message-broker
+      - inventory-mysql
+      
+  service-webapi:
+    build: ./web-api
+    hostname: service-webapi
+    restart: always
+    ports:
+      - "8081:8081"
+    depends_on:
+      - message-broker
