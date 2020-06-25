@@ -25,7 +25,7 @@ pipeline {
 		stage('Docker Build') {
 			steps {
 				sh 'docker build -t alexstraszacontainerregistry.azurecr.io/s6-auth:kube${BUILD_NUMBER} ./authentication'
-				sh 'docker build -t alexstraszacontainerregistry.azurecr.io/s6-auctioning:kube${BUILD_NUMBER} ./auctioning'
+				sh 'docker build -t alexstraszacontainerregistry.azurecr.io/s6-auction:kube${BUILD_NUMBER} ./auctioning'
 				sh 'docker build -t alexstraszacontainerregistry.azurecr.io/s6-currency:kube${BUILD_NUMBER} ./currency'
 				sh 'docker build -t alexstraszacontainerregistry.azurecr.io/s6-inventory:kube${BUILD_NUMBER} ./inventory'
 				sh 'docker build -t alexstraszacontainerregistry.azurecr.io/s6-webapi:kube${BUILD_NUMBER} ./web-api'
@@ -38,7 +38,7 @@ pipeline {
 			withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId:'acr-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]){
 				    sh 'docker login alexstraszacontainerregistry.azurecr.io -u $USERNAME -p $PASSWORD'
 				    sh 'docker push alexstraszacontainerregistry.azurecr.io/s6-auth:kube${BUILD_NUMBER}'
-				    sh 'docker push alexstraszacontainerregistry.azurecr.io/s6-auctioning:kube${BUILD_NUMBER}'
+				    sh 'docker push alexstraszacontainerregistry.azurecr.io/s6-auction:kube${BUILD_NUMBER}'
 				    sh 'docker push alexstraszacontainerregistry.azurecr.io/s6-currency:kube${BUILD_NUMBER}'
 				    sh 'docker push alexstraszacontainerregistry.azurecr.io/s6-inventory:kube${BUILD_NUMBER}'
 				    sh 'docker push alexstraszacontainerregistry.azurecr.io/s6-webapi:kube${BUILD_NUMBER}'
@@ -49,7 +49,7 @@ pipeline {
 		stage('kubetcl set') {
         			steps {
         				sh 'kubectl set image deployment/s6-auth s6-auth=alexstraszacontainerregistry.azurecr.io/s6-auth:kube${BUILD_NUMBER} --kubeconfig /home/alexstrasza/.kube/config'
-        				sh 'kubectl set image deployment/s6-auctioning s6-auctioning=alexstraszacontainerregistry.azurecr.io/s6-auctioning:kube${BUILD_NUMBER} --kubeconfig /home/alexstrasza/.kube/config'
+        				sh 'kubectl set image deployment/s6-auction s6-auction=alexstraszacontainerregistry.azurecr.io/s6-auction:kube${BUILD_NUMBER} --kubeconfig /home/alexstrasza/.kube/config'
         				sh 'kubectl set image deployment/s6-currency s6-currency=alexstraszacontainerregistry.azurecr.io/s6-currency:kube${BUILD_NUMBER} --kubeconfig /home/alexstrasza/.kube/config'
         				sh 'kubectl set image deployment/s6-inventory s6-inventory=alexstraszacontainerregistry.azurecr.io/s6-inventory:kube${BUILD_NUMBER} --kubeconfig /home/alexstrasza/.kube/config'
         				sh 'kubectl set image deployment/s6-webapi s6-webapi=alexstraszacontainerregistry.azurecr.io/s6-webapi:kube${BUILD_NUMBER} --kubeconfig /home/alexstrasza/.kube/config'
