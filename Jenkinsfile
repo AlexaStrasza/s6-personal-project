@@ -22,6 +22,23 @@ pipeline {
             }
         }
 
+		stage('SonarCloud package') {
+			steps {
+				sh 'mvn -f ./auctioning/pom.xml verify sonar:sonar'
+				sh 'mvn -f ./auctioning/pom.xml clean package sonar:sonar'
+				sh 'mvn -f ./authentication/pom.xml verify sonar:sonar'
+                sh 'mvn -f ./authentication/pom.xml clean package sonar:sonar'
+				sh 'mvn -f ./currency/pom.xml verify sonar:sonar'
+                sh 'mvn -f ./currency/pom.xml clean package sonar:sonar'
+				sh 'mvn -f ./inventory/pom.xml verify sonar:sonar'
+                sh 'mvn -f ./inventory/pom.xml clean package sonar:sonar'
+				sh 'mvn -f ./gateway/pom.xml verify sonar:sonar'
+                sh 'mvn -f ./gateway/pom.xml clean package sonar:sonar'
+				sh 'mvn -f ./web-api/pom.xml verify sonar:sonar'
+                sh 'mvn -f ./web-api/pom.xml clean package sonar:sonar'
+			}
+		}
+
 		stage('Docker Build') {
 			steps {
 				sh 'docker build -t alexstraszacontainerregistry.azurecr.io/s6-auth:kube${BUILD_NUMBER} ./authentication'
