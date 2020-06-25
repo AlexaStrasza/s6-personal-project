@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.alexstrasza</groupId>
+    <artifactId>auction-multi-modules</artifactId>
+    <packaging>pom</packaging>
+    <version>0.0.1-SNAPSHOT</version>
+
+    <!-- sub modules -->
+    <modules>
+        <module>auctioning</module>
+        <module>authentication</module>
+        <module>currency</module>
+        <module>inventory</module>
+        <module>gateway</module>
+        <module>web-api</module>
+    </modules>
+
+    <properties>
+        <java.version>11</java.version>
+        <sonar.projectKey>Al3xstrasza_s6-personal-project</sonar.projectKey>
+        <sonar.organization>al3xstrasza</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.login>a59d59cce1c5f12a60cebb900a8c6be507fc206f</sonar.login>
+    </properties>
+</project>
