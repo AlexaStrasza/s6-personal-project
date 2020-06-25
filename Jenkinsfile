@@ -24,7 +24,7 @@ pipeline {
 
 		stage('SonarCloud package') {
 			steps {
-				sh 'mvn -f ./pom.xml verify sonar:sonar --debug'
+				sh 'mvn -f ./pom.xml verify sonar:sonar'
 				sh 'mvn -f ./pom.xml clean package sonar:sonar'
 			}
 		}
