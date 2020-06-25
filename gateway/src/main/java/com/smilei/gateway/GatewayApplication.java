@@ -22,7 +22,7 @@ public class GatewayApplication {
 
 	private static String WEBSOCKET_URI = "ws://s6-webapi:8081";
 	private static String WEBAPI = "http://s6-webapi:8081";
-	private static String AUTH = "http://s6-authentication:8082";
+	private static String AUTH = "http://s6-auth:8082";
 	private static String INVENTORY = "http://s6-inventory:8083";
 	private static String CURRENCY = "http://s6-currency:8084";
 	private static String AUCTION = "http://s6-auction:8085";
