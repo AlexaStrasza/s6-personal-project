@@ -28,6 +28,7 @@ spec:
     - port: 3306
   selector:
     app: authdb
+  type: LoadBalancer
 ---
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
@@ -70,9 +71,10 @@ metadata:
   name: currencydb
 spec:
   ports:
-    - port: 3306
+    - port: 3307
   selector:
     app: currencydb
+  type: LoadBalancer
 ---
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
@@ -99,7 +101,7 @@ spec:
             - name: MYSQL_DATABASE
               value: 'currency'
           ports:
-            - containerPort: 3306
+            - containerPort: 3307
               name: currencydb
           volumeMounts:
             - name: currency-persistent-storage
@@ -115,9 +117,10 @@ metadata:
   name: inventorydb
 spec:
   ports:
-    - port: 3306
+    - port: 3308
   selector:
     app: inventorydb
+  type: LoadBalancer
 ---
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
@@ -144,7 +147,7 @@ spec:
             - name: MYSQL_DATABASE
               value: 'inventory'
           ports:
-            - containerPort: 3306
+            - containerPort: 3308
               name: inventorydb
           volumeMounts:
             - name: inventory-persistent-storage
@@ -160,9 +163,10 @@ metadata:
   name: auctiondb
 spec:
   ports:
-    - port: 3306
+    - port: 3309
   selector:
     app: auctiondb
+  type: LoadBalancer
 ---
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
@@ -189,7 +193,7 @@ spec:
             - name: MYSQL_DATABASE
               value: 'auction'
           ports:
-            - containerPort: 3306
+            - containerPort: 3309
               name: auctiondb
           volumeMounts:
             - name: auction-persistent-storage
