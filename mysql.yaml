@@ -1,0 +1,200 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: manual
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-standard
+  replication-type: none
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: authdb
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: authdb
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: authdb
+spec:
+  selector:
+    matchLabels:
+      app: authdb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: authdb
+    spec:
+      containers:
+        - image: mysql:8.0.20
+          name: authdb
+          env:
+            # Use secret in real usage
+            - name: MYSQL_ROOT_PASSWORD
+              value: 'password'
+            - name: MYSQL_DATABASE
+              value: 'authentication'
+          ports:
+            - containerPort: 3306
+              name: authdb
+          volumeMounts:
+            - name: auth-persistent-storage
+              mountPath: /var/lib/mysql-auth
+      volumes:
+        - name: auth-persistent-storage
+          persistentVolumeClaim:
+            claimName: mysql-pv-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: currencydb
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: currencydb
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: currencydb
+spec:
+  selector:
+    matchLabels:
+      app: currencydb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: currencydb
+    spec:
+      containers:
+        - image: mysql:8.0.20
+          name: currencydb
+          env:
+            # Use secret in real usage
+            - name: MYSQL_ROOT_PASSWORD
+              value: 'password'
+            - name: MYSQL_DATABASE
+              value: 'currency'
+          ports:
+            - containerPort: 3306
+              name: currencydb
+          volumeMounts:
+            - name: currency-persistent-storage
+              mountPath: /var/lib/mysql-currency
+      volumes:
+        - name: currency-persistent-storage
+          persistentVolumeClaim:
+            claimName: mysql-pv-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventorydb
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: inventorydb
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: inventorydb
+spec:
+  selector:
+    matchLabels:
+      app: inventorydb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: inventorydb
+    spec:
+      containers:
+        - image: mysql:8.0.20
+          name: inventorydb
+          env:
+            # Use secret in real usage
+            - name: MYSQL_ROOT_PASSWORD
+              value: 'password'
+            - name: MYSQL_DATABASE
+              value: 'inventory'
+          ports:
+            - containerPort: 3306
+              name: inventorydb
+          volumeMounts:
+            - name: inventory-persistent-storage
+              mountPath: /var/lib/mysql-inventory
+      volumes:
+        - name: inventory-persistent-storage
+          persistentVolumeClaim:
+            claimName: mysql-pv-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auctiondb
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: auctiondb
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: auctiondb
+spec:
+  selector:
+    matchLabels:
+      app: auctiondb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: auctiondb
+    spec:
+      containers:
+        - image: mysql:8.0.20
+          name: auctiondb
+          env:
+            # Use secret in real usage
+            - name: MYSQL_ROOT_PASSWORD
+              value: 'password'
+            - name: MYSQL_DATABASE
+              value: 'auction'
+          ports:
+            - containerPort: 3306
+              name: auctiondb
+          volumeMounts:
+            - name: auction-persistent-storage
+              mountPath: /var/lib/mysql-auction
+      volumes:
+        - name: auction-persistent-storage
+          persistentVolumeClaim:
+            claimName: mysql-pv-claim

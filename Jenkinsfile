@@ -50,6 +50,7 @@ pipeline {
 				    sh 'docker push alexstraszacontainerregistry.azurecr.io/s6-inventory:kube${BUILD_NUMBER}'
 				    sh 'docker push alexstraszacontainerregistry.azurecr.io/s6-webapi:kube${BUILD_NUMBER}'
 				    sh 'docker push alexstraszacontainerregistry.azurecr.io/s6-gateway:kube${BUILD_NUMBER}'
+					sh 'docker logout'
 				}
 			}
 		}
